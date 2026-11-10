@@ -55,7 +55,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
   onViewInvoice,
   onReturnProcessed
 }) => {
-  const currency = settings.currencySymbol || '₹';
+  const currency = settings.currencySymbol || 'ج.م';
 
   // State Management
   const [sales, setSales] = useState<Sale[]>(() => sqliteDB.getSales());
@@ -107,7 +107,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      alert('Voice Search is not supported in this browser environment. Please type your search query.');
+      alert('البحث الصوتي غير مدعوم في هذا المتصفح. يمكنك كتابة رقم الفاتورة أو اسم الصنف يدوياً.');
       return;
     }
 
@@ -120,7 +120,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = false;
-      recognition.lang = 'en-US';
+      recognition.lang = 'ar-EG';
 
       recognition.onstart = () => {
         setIsListening(true);
@@ -329,7 +329,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
     if (all.length > 0 && all[0].customerName) {
       setSearchQuery(all[0].customerName);
     } else {
-      alert('No recent registered customer found.');
+      alert('لم يتم العثور على عميل مسجل مؤخراً.');
     }
   };
 
@@ -342,7 +342,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
         openReturnProcessor(all[0]);
       }
     } else {
-      alert('No sales found in history.');
+      alert('لا توجد مبيعات مسجلة في السجل.');
     }
   };
 
@@ -360,7 +360,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
       }));
 
     if (itemsToReturn.length === 0) {
-      alert('Please select at least 1 item quantity to return.');
+      alert('يرجى تحديد كمية صنف واحد على الأقل للمرتجع.');
       return;
     }
 
@@ -372,7 +372,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
       onReturnProcessed();
     }
 
-    alert(`Refund Voucher recorded! Total refund of ${currency}${totalRefund} issued & inventory restocked.`);
+    alert(`تم تسجيل إذن المرتجع بنجاح! تم استرداد مبلغ ${totalRefund} ${currency} وإعادة الأصناف لرصيد المخزن.`);
     
     refreshAll();
 
@@ -380,7 +380,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
     setMatchedSale(null);
 
     if (updatedSale && onViewInvoice) {
-      if (confirm('Would you like to view & print the updated return receipt now?')) {
+      if (confirm('هل ترغب في معاينة وطباعة إيصال المرتجع المحدث الآن؟')) {
         onViewInvoice(updatedSale);
       }
     }
@@ -397,17 +397,17 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <RotateCcw className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-            Returns, Exchanges & Refund Center
+            مركز إدارة المرتجعات والاستبدال واسترداد الأموال
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Universal multi-search by Invoice #, Customer, Phone, Barcode, Item or Amount. Fast 1-click returns & automatic stock restock!
+            بحث شامل برقم الفاتورة، اسم العميل، رقم الهاتف، باركود الصنف أو القيمة. استرجاع فوري وإعادة البضاعة للمخزن بضغطة زر!
           </p>
         </div>
 
         {/* Quick Keyboard Hint */}
         <div className="flex items-center gap-2 text-[11px] font-mono bg-slate-100 dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400">
           <Zap className="w-3.5 h-3.5 text-amber-500" />
-          <span><strong className="text-slate-800 dark:text-slate-200">Ctrl + F</strong> Focus Search</span>
+          <span><strong className="text-slate-800 dark:text-slate-200">Ctrl + F</strong> للبحث السريع</span>
         </div>
       </div>
 
@@ -418,7 +418,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
           className="px-3.5 py-2 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-semibold border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5 shrink-0 transition"
         >
           <Clock className="w-3.5 h-3.5 text-emerald-600" />
-          Today's Sales
+          مبيعات اليوم
         </button>
 
         <button
@@ -426,7 +426,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
           className="px-3.5 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 shrink-0 transition"
         >
           <Receipt className="w-3.5 h-3.5 text-sky-500" />
-          Recent Invoices
+          أحدث الفواتير
         </button>
 
         <button
@@ -434,7 +434,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
           className="px-3.5 py-2 bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-800 dark:text-amber-300 rounded-xl text-xs font-semibold border border-amber-200 dark:border-amber-800 flex items-center gap-1.5 shrink-0 transition"
         >
           <Coins className="w-3.5 h-3.5 text-amber-600" />
-          High Value Bills (&ge;{currency}500)
+          الفواتير الكبيرة (&ge; 500 {currency})
         </button>
 
         <button
@@ -442,7 +442,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
           className="px-3.5 py-2 bg-purple-50 dark:bg-purple-950/50 hover:bg-purple-100 dark:hover:bg-purple-900 text-purple-800 dark:text-purple-300 rounded-xl text-xs font-semibold border border-purple-200 dark:border-purple-800 flex items-center gap-1.5 shrink-0 transition"
         >
           <User className="w-3.5 h-3.5 text-purple-600" />
-          Last Customer
+          آخر عميل
         </button>
 
         <button
@@ -450,7 +450,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
           className="px-3.5 py-2 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-800 dark:text-indigo-300 rounded-xl text-xs font-semibold border border-indigo-200 dark:border-indigo-800 flex items-center gap-1.5 shrink-0 transition"
         >
           <Eye className="w-3.5 h-3.5 text-indigo-600" />
-          View Last Bill
+          معاينة آخر فاتورة
         </button>
       </div>
 
@@ -460,15 +460,15 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
           <div className="flex items-center justify-between">
             <label className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
               <Search className="w-4 h-4 text-emerald-600" />
-              Universal Invoice & Product Barcode Search
+              البحث الشامل عن الفاتورة أو باركود الصنف
             </label>
             <span className="text-[11px] text-slate-400">
-              Supports Barcode Scanner, Voice Input, Customer Phone & Item Names
+              يدعم قارئ الباركود، البحث الصوتي، رقم هاتف العميل، واسم الصنف
             </span>
           </div>
 
           <div className="relative flex items-center">
-            <Search className="w-4 h-4 absolute left-3.5 text-slate-400 pointer-events-none" />
+            <Search className="w-4 h-4 absolute right-3.5 text-slate-400 pointer-events-none" />
             <input
               ref={searchInputRef}
               type="text"
@@ -478,16 +478,16 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
                 setShowSuggestions(true);
               }}
               onFocus={() => setShowSuggestions(true)}
-              placeholder="Scan barcode, type Invoice # (e.g. INV-2026-0001), Customer Name, Mobile #, or Product..."
-              className="w-full pl-10 pr-24 py-3 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono font-bold"
+              placeholder="امسح الباركود، أو اكتب رقم الفاتورة (مثال: INV-2026-0001)، أو اسم العميل، أو الموبايل..."
+              className="w-full pr-10 pl-24 py-3 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono font-bold text-right"
             />
 
-            <div className="absolute right-2 flex items-center gap-1">
+            <div className="absolute left-2 flex items-center gap-1">
               {/* Voice Search Button */}
               <button
                 type="button"
                 onClick={toggleVoiceSearch}
-                title="Voice Search"
+                title="البحث الصوتي"
                 className={`p-2 rounded-lg text-xs transition ${
                   isListening 
                     ? 'bg-rose-500 text-white animate-pulse' 
@@ -503,7 +503,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
                 className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1"
               >
                 <Search className="w-3.5 h-3.5" />
-                <span>Search</span>
+                <span>بحث</span>
               </button>
             </div>
           </div>
@@ -513,8 +513,8 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
         {showSuggestions && searchSuggestions.length > 0 && (
           <div className="absolute left-5 right-5 top-[92px] z-30 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-700">
             <div className="p-2 bg-slate-50 dark:bg-slate-900 text-[10px] font-bold text-slate-400 uppercase tracking-wider flex justify-between items-center">
-              <span>Matching Invoice Suggestions ({searchSuggestions.length})</span>
-              <span>Click to open or press Enter</span>
+              <span>الفواتير المطابقة للبحث ({searchSuggestions.length})</span>
+              <span>اضغط للفتح أو اضغط Enter</span>
             </div>
             {searchSuggestions.map(sugg => (
               <button
@@ -525,7 +525,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
                   setShowSuggestions(false);
                   openReturnProcessor(sugg.sale);
                 }}
-                className="w-full p-3 text-left hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40 flex items-center justify-between transition group"
+                className="w-full p-3 text-right hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40 flex items-center justify-between transition group"
               >
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
@@ -536,10 +536,10 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
                       {sugg.customerName}
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-500 flex items-center gap-2">
-                    <span className="font-mono">{currency}{sugg.amount}</span>
+                  <div className="text-[11px] text-slate-500 flex items-center gap-2 font-mono">
+                    <span>{sugg.amount} {currency}</span>
                     <span>•</span>
-                    <span>{new Date(sugg.dateTime).toLocaleString()}</span>
+                    <span>{new Date(sugg.dateTime).toLocaleString('ar-EG')}</span>
                   </div>
                 </div>
 
@@ -547,7 +547,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
                   <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded text-[10px] font-semibold">
                     {sugg.matchReason}
                   </span>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition" />
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition rotate-180" />
                 </div>
               </button>
             ))}
@@ -560,59 +560,59 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-200">
             <SlidersHorizontal className="w-4 h-4 text-emerald-600" />
-            <span>Refine Invoices Filter</span>
+            <span>تصفية وفلترة الفواتير</span>
           </div>
           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-            Showing {filteredSales.length} matching invoices
+            عرض {filteredSales.length} فاتورة مطابقة
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
           {/* Date Filter */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Time Period</label>
+            <label className="block text-[11px] font-semibold text-slate-500 mb-1">الفترة الزمنية</label>
             <select
               value={dateFilter}
               onChange={e => setDateFilter(e.target.value as DateFilterType)}
               className="w-full p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-medium"
             >
-              <option value="all">All Time</option>
-              <option value="today">Today</option>
-              <option value="yesterday">Yesterday</option>
-              <option value="last7">Last 7 Days</option>
-              <option value="last30">Last 30 Days</option>
-              <option value="custom">Custom Date Range</option>
+              <option value="all">كل الفترات</option>
+              <option value="today">اليوم</option>
+              <option value="yesterday">أمس</option>
+              <option value="last7">آخر 7 أيام</option>
+              <option value="last30">آخر 30 يوماً</option>
+              <option value="custom">تحديد فترة مخصصة</option>
             </select>
           </div>
 
           {/* Payment Method Filter */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Payment Method</label>
+            <label className="block text-[11px] font-semibold text-slate-500 mb-1">طريقة الدفع</label>
             <select
               value={paymentFilter}
               onChange={e => setPaymentFilter(e.target.value as PaymentFilterType)}
               className="w-full p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-medium"
             >
-              <option value="all">All Payment Modes</option>
-              <option value="Cash">Cash Only</option>
-              <option value="UPI">UPI Only</option>
-              <option value="Card">Card Only</option>
-              <option value="Credit">Credit Dues</option>
+              <option value="all">جميع طرق الدفع</option>
+              <option value="Cash">كاش فقط</option>
+              <option value="UPI">إنستاباي ومحافظ ذكية</option>
+              <option value="Card">بطاقة بنكية / فيزا</option>
+              <option value="Credit">آجل (شكك)</option>
             </select>
           </div>
 
           {/* Status Filter */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Sale Status</label>
+            <label className="block text-[11px] font-semibold text-slate-500 mb-1">حالة الفاتورة</label>
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value as StatusFilterType)}
               className="w-full p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-medium"
             >
-              <option value="all">All Statuses</option>
-              <option value="Completed">Completed</option>
-              <option value="Refunded">Refunded / Returned</option>
-              <option value="Cancelled">Cancelled</option>
+              <option value="all">كل الحالات</option>
+              <option value="Completed">مكتملة</option>
+              <option value="Refunded">مرتجعة</option>
+              <option value="Cancelled">ملغاة</option>
             </select>
           </div>
         </div>
@@ -626,7 +626,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
               onChange={e => setCustomStartDate(e.target.value)}
               className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs bg-slate-50 dark:bg-slate-900"
             />
-            <span className="self-center text-xs font-bold text-slate-400">to</span>
+            <span className="self-center text-xs font-bold text-slate-400">إلى</span>
             <input
               type="date"
               value={customEndDate}
@@ -646,12 +646,12 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
                 <span className="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-mono font-bold text-sm rounded-lg">
                   {matchedSale.invoiceNumber}
                 </span>
-                <span className="text-xs text-slate-500">
-                  {new Date(matchedSale.dateTime).toLocaleString()}
+                <span className="text-xs text-slate-500 font-mono">
+                  {new Date(matchedSale.dateTime).toLocaleString('ar-EG')}
                 </span>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-300 font-semibold mt-1">
-                Customer: {matchedSale.customerName || 'Walk-in Customer'} • Phone: {matchedSale.customerPhone || 'N/A'} • Cashier: {matchedSale.cashierName || 'Store Owner'}
+                العميل: {matchedSale.customerName || 'زبون نقدي'} • الهاتف: {matchedSale.customerPhone || 'غير مسجل'} • الكاشير: {matchedSale.cashierName || 'المدير'}
               </p>
             </div>
             <button
@@ -666,31 +666,33 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Reason for Return / Exchange
+                  سبب الإرجاع أو الاستبدال
                 </label>
                 <select
                   value={returnReason}
                   onChange={e => setReturnReason(e.target.value as any)}
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
-                  <option value="Defective">Defective / Damaged Item</option>
-                  <option value="Expired">Near Expiry / Expired Product</option>
-                  <option value="Wrong Item">Wrong Item Purchased</option>
-                  <option value="Customer Changed Mind">Customer Changed Mind</option>
+                  <option value="Defective">منتج به عيب أو تالف</option>
+                  <option value="Expired">قريب من انتهاء الصلاحية أو منتهي</option>
+                  <option value="Wrong Item">صنف تم شراؤه بالخطأ</option>
+                  <option value="Customer Changed Mind">رغبة العميل في التبديل أو الإرجاع</option>
                 </select>
               </div>
 
               <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 flex justify-between items-center">
                 <div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase">Original Bill Total</div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase">إجمالي الفاتورة الأصلية</div>
                   <div className="text-base font-mono font-bold text-slate-800 dark:text-slate-100">
-                    {currency}{matchedSale.totalAmount}
+                    {matchedSale.totalAmount} {currency}
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-[10px] font-bold text-slate-400 uppercase">Payment Mode</div>
+                <div className="text-left">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase">طريقة الدفع الأصلية</div>
                   <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                    {matchedSale.paymentMode}
+                    {matchedSale.paymentMode === 'Cash' ? 'كاش (نقدي)' :
+                     matchedSale.paymentMode === 'UPI' ? 'إنستاباي / محفظة' :
+                     matchedSale.paymentMode === 'Card' ? 'بطاقة بنكية' : 'آجل (شكك)'}
                   </div>
                 </div>
               </div>
@@ -698,21 +700,21 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
 
             <div className="space-y-2">
               <p className="font-bold text-slate-800 dark:text-slate-100 flex items-center justify-between">
-                <span>Select Item Quantities to Return:</span>
+                <span>حدد كمية الأصناف المراد إرجاعها:</span>
                 <span className="text-[11px] text-slate-400 font-normal">
-                  Items selected will be returned to store inventory
+                  الأصناف المحددة ستُعاد تلقائياً إلى مخزون المحل
                 </span>
               </p>
 
               <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-right text-xs">
                   <thead className="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold">
                     <tr>
-                      <th className="p-3">Product Name</th>
-                      <th className="p-3 text-center">Purchased Qty</th>
-                      <th className="p-3 text-center">Qty to Return</th>
-                      <th className="p-3 text-right">Unit Price</th>
-                      <th className="p-3 text-right">Subtotal Refund</th>
+                      <th className="p-3 text-right">اسم الصنف</th>
+                      <th className="p-3 text-center">الكمية بالفاتورة</th>
+                      <th className="p-3 text-center">الكمية المرتجعة</th>
+                      <th className="p-3 text-left">سعر القطعة</th>
+                      <th className="p-3 text-left">المبلغ المسترد</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -728,7 +730,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
                             </div>
                             {item.barcode && (
                               <div className="text-[10px] font-mono text-slate-400">
-                                Barcode: {item.barcode}
+                                باركود: {item.barcode}
                               </div>
                             )}
                           </td>
@@ -776,11 +778,11 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
                               </button>
                             </div>
                           </td>
-                          <td className="p-3 text-right font-mono text-slate-600 dark:text-slate-300">
-                            {currency}{item.unitSellingPrice}
+                          <td className="p-3 text-left font-mono text-slate-600 dark:text-slate-300">
+                            {item.unitSellingPrice} {currency}
                           </td>
-                          <td className="p-3 text-right font-mono font-bold text-rose-600">
-                            {currency}{subtotalRefund}
+                          <td className="p-3 text-left font-mono font-bold text-rose-600">
+                            {subtotalRefund} {currency}
                           </td>
                         </tr>
                       );
@@ -793,10 +795,9 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
             {/* Total Refund Summary & Action Buttons */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-3 border-t border-slate-200 dark:border-slate-700">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-500 font-semibold">Total Net Refund:</span>
+                <span className="text-xs text-slate-500 font-semibold">إجمالي المبلغ المسترد للعميل:</span>
                 <span className="font-bold text-lg text-rose-600 font-mono">
-                  {currency}
-                  {matchedSale.items.reduce((acc, item) => acc + ((selectedItemReturnQty[item.productId] || 0) * item.unitSellingPrice), 0)}
+                  {matchedSale.items.reduce((acc, item) => acc + ((selectedItemReturnQty[item.productId] || 0) * item.unitSellingPrice), 0)} {currency}
                 </span>
               </div>
 
@@ -808,7 +809,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
                     className="px-4 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl font-bold transition flex items-center gap-1.5"
                   >
                     <Eye className="w-4 h-4 text-slate-500" />
-                    <span>View Bill</span>
+                    <span>معاينة الفاتورة الأصلية</span>
                   </button>
                 )}
 
@@ -818,7 +819,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
                   className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold shadow-md transition flex items-center gap-2"
                 >
                   <PackageCheck className="w-4 h-4" />
-                  <span>Issue Refund & Restock Stock</span>
+                  <span>تأكيد الإرجاع واستعادة المخزون</span>
                 </button>
               </div>
             </div>
@@ -831,9 +832,9 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
             <Clock className="w-4 h-4 text-emerald-600" />
-            Recent Purchases & Invoices (Quick Return Click)
+            أحدث عمليات الشراء والفواتير (اضغط لفتح الإرجاع السريع)
           </h3>
-          <span className="text-[11px] text-slate-400">Click any bill to return or view</span>
+          <span className="text-[11px] text-slate-400">اضغط على أي فاتورة لإرجاعها أو معاينتها</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
@@ -841,27 +842,29 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
             <div
               key={sale.id}
               onClick={() => openReturnProcessor(sale)}
-              className="p-3 bg-slate-50 dark:bg-slate-900 hover:bg-emerald-50/80 dark:hover:bg-emerald-950/40 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 rounded-xl cursor-pointer transition space-y-1.5 group"
+              className="p-3 bg-slate-50 dark:bg-slate-900 hover:bg-emerald-50/80 dark:hover:bg-emerald-950/40 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 rounded-xl cursor-pointer transition space-y-1.5 group text-right"
             >
               <div className="flex items-center justify-between">
                 <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400 group-hover:underline">
                   {sale.invoiceNumber}
                 </span>
                 <span className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded text-[9px] font-bold">
-                  {sale.paymentMode}
+                  {sale.paymentMode === 'Cash' ? 'كاش' :
+                   sale.paymentMode === 'UPI' ? 'إنستاباي' :
+                   sale.paymentMode === 'Card' ? 'فيزا' : 'شكك'}
                 </span>
               </div>
 
               <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate">
-                {sale.customerName || 'Walk-in Customer'}
+                {sale.customerName || 'زبون نقدي'}
               </div>
 
               <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-800 text-[11px]">
                 <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
-                  {currency}{sale.totalAmount}
+                  {sale.totalAmount} {currency}
                 </span>
                 <span className="text-[10px] text-slate-400">
-                  {sale.items.length} items
+                  {sale.items.length} صنف
                 </span>
               </div>
             </div>
@@ -872,14 +875,14 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
       {/* Filtered Search Results Grid / Cards */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs overflow-hidden">
         <div className="p-4 border-b border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center justify-between">
-          <span>Search Results & Sales Invoices ({filteredSales.length})</span>
+          <span>نتائج البحث وفواتير المبيعات ({filteredSales.length})</span>
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
               className="text-xs font-semibold text-rose-600 hover:underline flex items-center gap-1"
             >
               <X className="w-3.5 h-3.5" />
-              Clear Search
+              مسح البحث
             </button>
           )}
         </div>
@@ -888,21 +891,21 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
           {filteredSales.length === 0 ? (
             <div className="col-span-full py-12 text-center text-slate-400 text-xs space-y-2">
               <Search className="w-8 h-8 mx-auto text-slate-300" />
-              <p>No matching sales invoices found. Try adjusting your search keywords or filters.</p>
+              <p>لم يتم العثور على فواتير مطابقة. جرب تغيير كلمات البحث أو الفلاتر.</p>
             </div>
           ) : (
             filteredSales.map(sale => (
               <div
                 key={sale.id}
-                className="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700/80 space-y-3 hover:shadow-sm transition"
+                className="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700/80 space-y-3 hover:shadow-sm transition text-right"
               >
                 <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
                   <div className="space-y-0.5">
                     <span className="font-mono font-bold text-sm text-emerald-600 dark:text-emerald-400">
                       {sale.invoiceNumber}
                     </span>
-                    <div className="text-[10px] text-slate-400">
-                      {new Date(sale.dateTime).toLocaleString()}
+                    <div className="text-[10px] text-slate-400 font-mono">
+                      {new Date(sale.dateTime).toLocaleString('ar-EG')}
                     </div>
                   </div>
 
@@ -913,31 +916,33 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
                       ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300'
                       : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
                   }`}>
-                    {sale.status}
+                    {sale.status === 'Completed' ? 'مكتملة' :
+                     sale.status === 'Refunded' ? 'مرتجعة' :
+                     sale.status === 'Partially Refunded' ? 'مرتجع جزئي' : 'ملغاة'}
                   </span>
                 </div>
 
                 <div className="text-xs space-y-1 text-slate-700 dark:text-slate-300">
                   <div className="flex justify-between font-semibold">
-                    <span>Customer:</span>
-                    <span>{sale.customerName || 'Walk-in Customer'}</span>
+                    <span>العميل:</span>
+                    <span>{sale.customerName || 'زبون نقدي'}</span>
                   </div>
 
                   {sale.customerPhone && (
                     <div className="flex justify-between text-[11px] text-slate-500">
-                      <span>Phone:</span>
+                      <span>الهاتف:</span>
                       <span className="font-mono">{sale.customerPhone}</span>
                     </div>
                   )}
 
                   <div className="flex justify-between font-semibold">
-                    <span>Cashier:</span>
-                    <span>{sale.cashierName || 'Store Owner'}</span>
+                    <span>الكاشير:</span>
+                    <span>{sale.cashierName || 'المدير'}</span>
                   </div>
 
                   <div className="flex justify-between font-mono font-bold text-slate-900 dark:text-slate-100 pt-1 border-t border-slate-200 dark:border-slate-800">
-                    <span>Total Amount:</span>
-                    <span>{currency}{sale.totalAmount} ({sale.paymentMode})</span>
+                    <span>إجمالي الفاتورة:</span>
+                    <span>{sale.totalAmount} {currency} ({sale.paymentMode === 'Cash' ? 'كاش' : sale.paymentMode === 'UPI' ? 'إنستاباي' : sale.paymentMode === 'Card' ? 'فيزا' : 'شكك'})</span>
                   </div>
 
                   {/* Sample Items preview pill tag */}
@@ -962,7 +967,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
                       className="flex-1 py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition"
                     >
                       <Eye className="w-3.5 h-3.5 text-slate-500" />
-                      View
+                      معاينة
                     </button>
                   )}
 
@@ -971,10 +976,10 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
                       type="button"
                       onClick={() => onViewInvoice(sale)}
                       className="py-1.5 px-3 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 border border-emerald-200 dark:border-emerald-800 transition"
-                      title="Print Invoice"
+                      title="طباعة الفاتورة"
                     >
                       <Printer className="w-3.5 h-3.5 text-emerald-600" />
-                      Print
+                      طباعة
                     </button>
                   )}
 
@@ -984,7 +989,7 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
                     className="flex-1 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1 shadow-xs transition"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    Return / Refund
+                    إرجاع / استبدال
                   </button>
                 </div>
               </div>
@@ -996,27 +1001,27 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
       {/* Return Vouchers History Table */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-xs">
         <div className="p-4 border-b font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center justify-between">
-          <span>Processed Return Vouchers History Log</span>
-          <span className="text-xs font-mono text-slate-400">{returns.length} Total Vouchers</span>
+          <span>سجل وأذونات المرتجعات المنفذة</span>
+          <span className="text-xs font-mono text-slate-400">إجمالي {returns.length} إذن مرتجع</span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-right border-collapse text-xs">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700 font-semibold uppercase tracking-wider text-[10px]">
-                <th className="py-3 px-4">Return Invoice #</th>
-                <th className="py-3 px-4">Original Invoice</th>
-                <th className="py-3 px-4">Customer</th>
-                <th className="py-3 px-4">Reason</th>
-                <th className="py-3 px-4 text-right">Refund Amount</th>
-                <th className="py-3 px-4 text-center">Actions</th>
+                <th className="py-3 px-4 text-right">رقم إذن المرتجع</th>
+                <th className="py-3 px-4 text-right">رقم الفاتورة الأصلية</th>
+                <th className="py-3 px-4 text-right">اسم العميل</th>
+                <th className="py-3 px-4 text-right">سبب الإرجاع</th>
+                <th className="py-3 px-4 text-left">المبلغ المسترد</th>
+                <th className="py-3 px-4 text-center">إجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-slate-700 dark:text-slate-300">
               {returns.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-slate-400">
-                    No return vouchers recorded yet.
+                    لا توجد أذونات مرتجعات مسجلة حتى الآن.
                   </td>
                 </tr>
               ) : (
@@ -1025,9 +1030,14 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
                     <td className="py-3 px-4 font-mono font-bold text-rose-600">{ret.returnInvoiceNumber}</td>
                     <td className="py-3 px-4 font-mono font-semibold">{ret.originalInvoiceNumber}</td>
                     <td className="py-3 px-4">{ret.customerName}</td>
-                    <td className="py-3 px-4 font-medium">{ret.reason}</td>
-                    <td className="py-3 px-4 text-right font-bold text-rose-600 font-mono">
-                      {currency}{ret.refundAmount}
+                    <td className="py-3 px-4 font-medium">
+                      {ret.reason === 'Defective' ? 'تالف / عيب بالمنتج' :
+                       ret.reason === 'Expired' ? 'منتهي الصلاحية' :
+                       ret.reason === 'Wrong Item' ? 'شراء بالخطأ' :
+                       ret.reason === 'Customer Changed Mind' ? 'رغبة العميل' : ret.reason}
+                    </td>
+                    <td className="py-3 px-4 text-left font-bold text-rose-600 font-mono">
+                      {ret.refundAmount} {currency}
                     </td>
                     <td className="py-3 px-4 text-center">
                       <button
@@ -1036,13 +1046,13 @@ export const ReturnsExchangesView: React.FC<ReturnsExchangesViewProps> = ({
                           if (sale && onViewInvoice) {
                             onViewInvoice(sale);
                           } else {
-                            alert(`Invoice details for ${ret.originalInvoiceNumber} not found.`);
+                            alert(`تفاصيل الفاتورة رقم ${ret.originalInvoiceNumber} غير موجودة.`);
                           }
                         }}
                         className="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-lg text-[11px] font-semibold inline-flex items-center gap-1 transition"
                       >
                         <Printer className="w-3.5 h-3.5 text-emerald-600" />
-                        Print Bill
+                        طباعة الفاتورة
                       </button>
                     </td>
                   </tr>

@@ -53,22 +53,22 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
     unit: 'pcs',
   });
 
-  const currency = settings.currencySymbol || '₹';
+  const currency = settings.currencySymbol || 'ج.م';
 
-  const categories = ['All', ...Array.from(new Set(products.map(p => p.category)))];
+  const categories = ['الكل', ...Array.from(new Set(products.map(p => p.category)))];
 
   const handleOpenAddModal = () => {
     setEditingProduct(null);
     setFormData({
       name: '',
-      category: 'Grains & Atta',
-      barcode: `${Math.floor(8900000000000 + Math.random() * 90000000000)}`,
+      category: 'أرز ومكرونة وحبوب',
+      barcode: `${Math.floor(6220000000000 + Math.random() * 90000000000)}`,
       purchasePrice: '',
       sellingPrice: '',
       quantity: '',
       supplierName: '',
       expiryDate: '',
-      unit: 'pcs',
+      unit: 'قطعة',
     });
     setIsModalOpen(true);
   };
@@ -84,20 +84,20 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
       quantity: product.quantity.toString(),
       supplierName: product.supplierName || '',
       expiryDate: product.expiryDate || '',
-      unit: product.unit || 'pcs',
+      unit: product.unit || 'قطعة',
     });
     setIsModalOpen(true);
   };
 
   const handleGenerateBarcode = () => {
-    const randomBarcode = `${Math.floor(8900000000000 + Math.random() * 90000000000)}`;
+    const randomBarcode = `${Math.floor(6220000000000 + Math.random() * 90000000000)}`;
     setFormData(prev => ({ ...prev, barcode: randomBarcode }));
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.barcode || !formData.purchasePrice || !formData.sellingPrice || !formData.quantity) {
-      alert('Please fill in all required product fields.');
+      alert('يرجى ملء جميع الحقول الإلزامية للمنتج.');
       return;
     }
 
@@ -119,7 +119,7 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
 
   // Filtered list
   const filteredProducts = products.filter(p => {
-    const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'All' || selectedCategory === 'الكل' || p.category === selectedCategory;
     
     let matchesFilter = true;
     if (filterType === 'low') {
@@ -151,19 +151,19 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs">
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-            Product Inventory Management ({products.length} SKUs)
+            إدارة المخزن والمنتجات ({products.length} صنف مسجل)
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Manage product pricing, stock quantities, barcodes, suppliers, and expiry dates.
+            إدارة أسعار الشراء والبيع، الأرصدة المتوفرة، الباركود، الموردين وتواريخ الصلاحية.
           </p>
         </div>
 
         <button
           onClick={handleOpenAddModal}
-          className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-xs flex items-center gap-2 shadow-md hover:shadow-emerald-500/20 transition self-start sm:self-auto"
+          className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-xs flex items-center gap-2 shadow-md hover:shadow-emerald-500/20 transition self-start sm:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>Add New Product</span>
+          <span>إضافة صنف جديد</span>
         </button>
       </div>
 
@@ -173,13 +173,13 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
           
           {/* Search Input */}
           <div className="relative w-full md:w-96">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+            <Search className="w-4 h-4 absolute right-3 top-3 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by name, barcode, or supplier..."
+              placeholder="ابحث بالاسم، الباركود، أو المورد..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="w-full pr-9 pl-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
             />
           </div>
 
@@ -187,46 +187,46 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
           <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
             <button
               onClick={() => setFilterType('all')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer ${
                 filterType === 'all'
-                  ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900'
+                  ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold'
                   : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
               }`}
             >
-              All Items ({products.length})
+              جميع الأصناف ({products.length})
             </button>
 
             <button
               onClick={() => setFilterType('low')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer ${
                 filterType === 'low'
-                  ? 'bg-amber-600 text-white'
+                  ? 'bg-amber-600 text-white font-bold'
                   : 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
               }`}
             >
-              Low Stock
+              نواقص وقرب النفاد
             </button>
 
             <button
               onClick={() => setFilterType('out')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer ${
                 filterType === 'out'
-                  ? 'bg-rose-600 text-white'
+                  ? 'bg-rose-600 text-white font-bold'
                   : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
               }`}
             >
-              Out of Stock
+              نفد من المخزن
             </button>
 
             <button
               onClick={() => setFilterType('expiring')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer ${
                 filterType === 'expiring'
-                  ? 'bg-purple-600 text-white'
+                  ? 'bg-purple-600 text-white font-bold'
                   : 'bg-purple-50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800'
               }`}
             >
-              Expiring Soon
+              قرب انتهاء الصلاحية
             </button>
           </div>
 
@@ -234,14 +234,14 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
 
         {/* Category Filter */}
         <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-slate-100 dark:border-slate-700/60 scrollbar-none">
-          <span className="text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase mr-1">Category:</span>
+          <span className="text-xs text-slate-400 dark:text-slate-500 font-semibold ml-1">القسم:</span>
           {categories.map(cat => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer ${
                 selectedCategory === cat
-                  ? 'bg-emerald-600 text-white font-semibold'
+                  ? 'bg-emerald-600 text-white font-bold'
                   : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
               }`}
             >
@@ -254,25 +254,25 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
       {/* Inventory Table */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-right border-collapse">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                <th className="p-3.5">ID / Barcode</th>
-                <th className="p-3.5">Product Name</th>
-                <th className="p-3.5">Category</th>
-                <th className="p-3.5 text-right">Cost Price</th>
-                <th className="p-3.5 text-right">Sell Price</th>
-                <th className="p-3.5 text-right">Margin %</th>
-                <th className="p-3.5 text-center">In Stock</th>
-                <th className="p-3.5">Supplier</th>
-                <th className="p-3.5 text-right">Actions</th>
+              <tr className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                <th className="p-3.5">الكود / الباركود</th>
+                <th className="p-3.5">اسم الصنف</th>
+                <th className="p-3.5">القسم</th>
+                <th className="p-3.5 text-left">سعر الشراء</th>
+                <th className="p-3.5 text-left">سعر البيع</th>
+                <th className="p-3.5 text-left">هامش الربح %</th>
+                <th className="p-3.5 text-center">الرصيد المتاح</th>
+                <th className="p-3.5">المورد</th>
+                <th className="p-3.5 text-left">إجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs">
               {filteredProducts.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="text-center py-12 text-slate-400 dark:text-slate-500">
-                    No products found matching filters.
+                    لم يتم العثور على أي منتج يطابق معايير البحث.
                   </td>
                 </tr>
               ) : (
@@ -295,7 +295,7 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
                         {p.name}
                         {p.expiryDate && (
                           <div className="text-[10px] text-amber-600 dark:text-amber-400 font-normal mt-0.5">
-                            Exp: {p.expiryDate}
+                            صلاحية: {p.expiryDate}
                           </div>
                         )}
                       </td>
@@ -306,56 +306,60 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
                         </span>
                       </td>
 
-                      <td className="p-3.5 text-right font-mono text-slate-600 dark:text-slate-400">
-                        {currency}{p.purchasePrice}
+                      <td className="p-3.5 text-left font-mono text-slate-600 dark:text-slate-400">
+                        {p.purchasePrice} {currency}
                       </td>
 
-                      <td className="p-3.5 text-right font-mono font-bold text-slate-900 dark:text-slate-100">
-                        {currency}{p.sellingPrice}
+                      <td className="p-3.5 text-left font-mono font-bold text-slate-900 dark:text-slate-100">
+                        {p.sellingPrice} {currency}
                       </td>
 
-                      <td className="p-3.5 text-right font-mono font-semibold text-emerald-600 dark:text-emerald-400">
+                      <td className="p-3.5 text-left font-mono font-semibold text-emerald-600 dark:text-emerald-400">
                         +{marginPercent}%
                       </td>
 
                       <td className="p-3.5 text-center">
-                        <span className={`px-2.5 py-1 rounded-full font-mono font-bold text-xs ${
+                        <span className={`px-2.5 py-1 rounded-full font-bold text-xs ${
                           isOut
                             ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
                             : isLow
                             ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                             : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                         }`}>
-                          {p.quantity} {p.unit || 'pcs'}
+                          {p.quantity} {p.unit || 'قطعة'}
                         </span>
                       </td>
 
                       <td className="p-3.5 text-slate-600 dark:text-slate-400 font-medium">
-                        {p.supplierName || 'General'}
+                        {p.supplierName || 'عام'}
                       </td>
 
-                      <td className="p-3.5 text-right">
+                      <td className="p-3.5 text-left">
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => onOpenBarcodeGenerator(p)}
-                            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition"
-                            title="Print Barcode Label"
+                            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition cursor-pointer"
+                            title="طباعة ملصق الباركود"
                           >
                             <Barcode className="w-4 h-4" />
                           </button>
 
                           <button
                             onClick={() => handleOpenEditModal(p)}
-                            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition"
-                            title="Edit Product"
+                            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition cursor-pointer"
+                            title="تعديل الصنف"
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
 
                           <button
-                            onClick={() => onDeleteProduct(p.id)}
+                            onClick={() => {
+                              if (confirm(`هل أنت متأكد من حذف الصنف "${p.name}"؟`)) {
+                                onDeleteProduct(p.id);
+                              }
+                            }}
                             className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950 text-rose-600 rounded-lg transition cursor-pointer"
-                            title="Delete Product"
+                            title="حذف الصنف"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -373,15 +377,15 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
       {/* Add / Edit Product Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-150 my-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-150 my-auto text-right">
             
             <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
               <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">
-                {editingProduct ? 'Edit Product Details' : 'Add New Product to Inventory'}
+                {editingProduct ? 'تعديل بيانات الصنف' : 'إضافة منتج جديد للمخزن'}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -391,12 +395,12 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
               
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Product Name *
+                  اسم المنتج *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Fortune Sunflower Oil 1L"
+                  placeholder="مثال: زيت ذرة عافية 800 مل"
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500"
@@ -406,7 +410,7 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Category *
+                    القسم / التصنيف *
                   </label>
                   <input
                     type="text"
@@ -417,35 +421,37 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
                     className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                   <datalist id="category-suggestions">
-                    <option value="Grains & Atta" />
-                    <option value="Rice & Pulses" />
-                    <option value="Oils & Ghee" />
-                    <option value="Spices & Salt" />
-                    <option value="Beverages" />
-                    <option value="Snacks & Biscuits" />
-                    <option value="Dairy & Bakery" />
-                    <option value="Personal Care" />
-                    <option value="Household" />
+                    <option value="أرز ومكرونة وحبوب" />
+                    <option value="زيوت وسمن" />
+                    <option value="سكر وسلع تموينية" />
+                    <option value="بهارات وعطارة وملح" />
+                    <option value="مشروبات وشاي وقهوة" />
+                    <option value="ألبان وأجبان ومخبوزات" />
+                    <option value="مقرمشات وبسكويت وشيكولاتة" />
+                    <option value="منظفات وعناية منزلية" />
+                    <option value="عناية شخصية وصابون" />
+                    <option value="عروض وباقات توفير" />
                   </datalist>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Unit Type
+                    نوع وحدة القياس
                   </label>
                   <select
                     value={formData.unit}
                     onChange={e => setFormData({ ...formData, unit: e.target.value })}
                     className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs outline-none"
                   >
-                    <option value="pcs">Pieces (pcs)</option>
-                    <option value="packet">Packet</option>
-                    <option value="kg">Kilogram (kg)</option>
-                    <option value="g">Gram (g)</option>
-                    <option value="l">Litre (L)</option>
-                    <option value="ml">Millilitre (ml)</option>
-                    <option value="bag">Bag / Sack</option>
-                    <option value="box">Box / Carton</option>
+                    <option value="قطعة">قطعة (pcs)</option>
+                    <option value="علبة">علبة / باكت</option>
+                    <option value="كجم">كيلوجرام (كجم)</option>
+                    <option value="جم">جرام (جم)</option>
+                    <option value="لتر">لتر (L)</option>
+                    <option value="مل">مليلتر (مل)</option>
+                    <option value="كيس">كيس</option>
+                    <option value="كرتونة">كرتونة</option>
+                    <option value="شيكارة">شيكارة</option>
                   </select>
                 </div>
               </div>
@@ -453,19 +459,19 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
               {/* Barcode Field with Auto Generator */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
-                  <span>Barcode Number *</span>
+                  <span>رقم الباركود الدولي *</span>
                   <button
                     type="button"
                     onClick={handleGenerateBarcode}
-                    className="text-emerald-600 hover:underline font-semibold text-[11px] flex items-center gap-1"
+                    className="text-emerald-600 hover:underline font-semibold text-[11px] flex items-center gap-1 cursor-pointer"
                   >
-                    <Sparkles className="w-3 h-3" /> Auto Generate
+                    <Sparkles className="w-3 h-3" /> توليد باركود تلقائي
                   </button>
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Scan USB barcode or auto-generate"
+                  placeholder="امسح الباركود بجهاز القارئ أو اضغط توليد تلقائي"
                   value={formData.barcode}
                   onChange={e => setFormData({ ...formData, barcode: e.target.value })}
                   className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-mono outline-none focus:ring-2 focus:ring-emerald-500"
@@ -475,7 +481,7 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Purchase Price ({currency}) *
+                    سعر الشراء ({currency}) *
                   </label>
                   <input
                     type="number"
@@ -490,7 +496,7 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Selling Price ({currency}) *
+                    سعر البيع ({currency}) *
                   </label>
                   <input
                     type="number"
@@ -505,7 +511,7 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Stock Qty *
+                    الكمية المتاحة *
                   </label>
                   <input
                     type="number"
@@ -521,11 +527,11 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Supplier Name
+                    اسم المورد أو الشركة
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Fortune Wholesalers"
+                    placeholder="مثال: شركة جهينة"
                     value={formData.supplierName}
                     onChange={e => setFormData({ ...formData, supplierName: e.target.value })}
                     className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs outline-none"
@@ -534,7 +540,7 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Expiry Date (Optional)
+                    تاريخ انتهاء الصلاحية
                   </label>
                   <input
                     type="date"
@@ -549,15 +555,15 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium text-xs rounded-xl"
+                  className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-xl cursor-pointer"
                 >
-                  Cancel
+                  إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-md transition"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition cursor-pointer"
                 >
-                  Save Product
+                  حفظ الصنف
                 </button>
               </div>
 

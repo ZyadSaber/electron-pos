@@ -59,55 +59,55 @@ const STORAGE_KEYS = {
 export const INITIAL_SAMPLE_BRANCHES: Branch[] = [
   {
     id: 'BRANCH-01',
-    name: 'Main Supermarket Branch',
+    name: 'الفرع الرئيسي',
     code: 'MAIN',
-    address: 'Shop No. 12, Main Market Road, Sector 4, Bangalore',
-    phone: '+91 98765 00000',
+    address: 'شارع التحرير، الدقي، الجيزة',
+    phone: '01012345678',
     isPrimary: true,
   },
   {
     id: 'BRANCH-02',
-    name: 'MG Road Express Store',
-    code: 'MGROAD',
-    address: 'No. 45, MG Road Commercial Hub, Bangalore',
-    phone: '+91 98765 00001',
+    name: 'فرع المهندسين',
+    code: 'MOHANDESSIN',
+    address: 'شارع جامعة الدول، المهندسين، الجيزة',
+    phone: '01098765432',
     isPrimary: false,
   }
 ];
 
 export const INITIAL_SAMPLE_CATEGORIES: CategoryNode[] = [
-  { id: 'CAT-1', name: 'Grains & Atta', description: 'Flours, rice, wheat and grains' },
-  { id: 'CAT-2', name: 'Oils & Ghee', description: 'Cooking oils, mustard oil, pure ghee' },
-  { id: 'CAT-3', name: 'Rice & Pulses', description: 'Basmati rice, sona masoori, lentils' },
-  { id: 'CAT-4', name: 'Spices & Salt', description: 'Powdered spices, whole spices, rock salt' },
-  { id: 'CAT-5', name: 'Beverages', description: 'Tea, coffee, juices, soft drinks' },
-  { id: 'CAT-6', name: 'Dairy & Bakery', description: 'Milk, butter, cheese, bread' },
-  { id: 'CAT-7', name: 'Snacks & Biscuits', description: 'Cookies, chips, namkeen' },
-  { id: 'CAT-8', name: 'Household', description: 'Detergents, soaps, cleaners' },
-  { id: 'CAT-9', name: 'Personal Care', description: 'Shampoos, soaps, toothpaste' },
-  { id: 'CAT-10', name: 'Combos & Packs', description: 'Special festival and daily bundles' }
+  { id: 'CAT-1', name: 'أرز ومكرونة وحبوب', description: 'أرز مصري، مكرونة، دقيق وبقوليات' },
+  { id: 'CAT-2', name: 'زيوت وسمن', description: 'زيت ذرة، عباد، زيت خليط وسمن نباتي وطبيعي' },
+  { id: 'CAT-3', name: 'سكر وسلع تموينية', description: 'سكر، أرز تمويني، دقيق' },
+  { id: 'CAT-4', name: 'بهارات وعطارة وملح', description: 'بهارات مشكلة، فلفل، كمون، ملح طعام' },
+  { id: 'CAT-5', name: 'مشروبات وشاي وقهوة', description: 'شاي، بن، عصائر، مياه غازية ومعدنية' },
+  { id: 'CAT-6', name: 'ألبان وأجبان ومخبوزات', description: 'لبن، زبادي، جبن بأنواعه، خبز وتوست' },
+  { id: 'CAT-7', name: 'مقرمشات وبسكويت وشيكولاتة', description: 'بسكويت، شيبسي، كيك وحلويات' },
+  { id: 'CAT-8', name: 'منظفات وعناية منزلية', description: 'مساحيق غسيل، صابون أطباق، معقمات' },
+  { id: 'CAT-9', name: 'عناية شخصية وصابون', description: 'شامبو، صابون، معجون أسنان' },
+  { id: 'CAT-10', name: 'عروض وباقات توفير', description: 'باقات مجمعة وعروض خاصة للزبائن' }
 ];
 
 export const UNIT_CONVERSIONS: UnitConversion[] = [
-  { fromUnit: 'kg', toUnit: 'g', factor: 1000 },
-  { fromUnit: 'g', toUnit: 'kg', factor: 0.001 },
-  { fromUnit: 'litre', toUnit: 'ml', factor: 1000 },
-  { fromUnit: 'ml', toUnit: 'litre', factor: 0.001 },
-  { fromUnit: 'sack', toUnit: 'kg', factor: 50 },
-  { fromUnit: 'box', toUnit: 'pcs', factor: 10 },
-  { fromUnit: 'packet', toUnit: 'pcs', factor: 1 }
+  { fromUnit: 'كجم', toUnit: 'جم', factor: 1000 },
+  { fromUnit: 'جم', toUnit: 'كجم', factor: 0.001 },
+  { fromUnit: 'لتر', toUnit: 'مل', factor: 1000 },
+  { fromUnit: 'مل', toUnit: 'لتر', factor: 0.001 },
+  { fromUnit: 'شيكارة', toUnit: 'كجم', factor: 50 },
+  { fromUnit: 'كرتونة', toUnit: 'قطعة', factor: 12 },
+  { fromUnit: 'علبة', toUnit: 'قطعة', factor: 1 }
 ];
 
 export const INITIAL_SAMPLE_UPDATES: UpdatePackage[] = [
   {
-    version: '2.0.0 Commercial',
+    version: '2.0.0 النسخة التجارية',
     releaseDate: '2026-07-28',
     releaseNotes: [
-      'Added Multi-Branch support architecture',
-      'Implemented FIFO Batch & Lot expiry warnings',
-      'Added Cash Register drawer shifts & daily reconciliation',
-      'Added Smart Reorder calculations and printable reports',
-      'Full offline performance and diagnostics health monitor'
+      'دعم كامل للفروع المتعددة',
+      'تتبع الصلاحيات والتحذير المبكر لانتهاء الصلاحية',
+      'إدارة شفتات الكاشير ودرج النقدية والجرد اليومي',
+      'نظام إعادة الطلب الذكي وتحليلات المخزون',
+      'مراقبة الأداء وتشخيص النظام المحلي أوفلاين'
     ],
     isApplied: true,
   }
@@ -115,14 +115,14 @@ export const INITIAL_SAMPLE_UPDATES: UpdatePackage[] = [
 
 // Initial default shop settings
 export const DEFAULT_SETTINGS: ShopSettings = {
-  shopName: 'Green Grocery & Supermarket',
-  ownerName: 'Rajesh Kumar',
-  address: 'Shop No. 12, Main Market Road, Sector 4, Bangalore - 560001',
-  phone: '+91 98765 00000',
-  gstNumber: '29XXXXX0000X1Z5',
-  invoicePrefix: 'INV',
-  currencySymbol: '₹',
-  defaultTaxPercent: 0,
+  shopName: 'سوبر ماركت النور',
+  ownerName: 'محمد أحمد',
+  address: 'شارع التحرير، الدقي، الجيزة، مصر',
+  phone: '01012345678',
+  gstNumber: '100-234-567',
+  invoicePrefix: 'فاتورة',
+  currencySymbol: 'ج.م',
+  defaultTaxPercent: 14,
   lowStockThreshold: 10,
   receiptType: 'thermal',
   receiptSize: '80mm',
@@ -133,13 +133,13 @@ export const DEFAULT_SETTINGS: ShopSettings = {
   requireManagerPinForDiscount: true,
   discountThresholdPercent: 15,
   enableLoyalty: true,
-  loyaltyPointRatio: 100, // 1 pt per ₹100
-  // UPI Payment Default Settings
+  loyaltyPointRatio: 50, // 1 point per 50 EGP
+  // Electronic / InstaPay Payment Default Settings
   enableUpiPayments: true,
-  merchantName: 'Green Grocery & Supermarket',
-  upiId: 'merchant@upi',
-  defaultPaymentNote: 'Thank you for shopping at Green Grocery!',
-  upiReceiptFooter: 'QR Payment Completed via Dynamic UPI',
+  merchantName: 'سوبر ماركت النور',
+  upiId: 'elnour@instapay',
+  defaultPaymentNote: 'شكراً لتسوقكم من سوبر ماركت النور',
+  upiReceiptFooter: 'تم الدفع الإلكتروني بنجاح عبر إنستاباي / المحفظة',
   merchantLogo: '',
 };
 
@@ -147,192 +147,192 @@ export const DEFAULT_SETTINGS: ShopSettings = {
 export const INITIAL_SAMPLE_PRODUCTS: Product[] = [
   {
     id: 'PRD-1001',
-    name: 'Fortune Sunlite Sunflower Oil 1L',
-    category: 'Oils & Ghee',
-    barcode: '8901234001011',
-    purchasePrice: 135,
-    sellingPrice: 160,
+    name: 'زيت ذرة عافية نقي 800 مل',
+    category: 'زيوت وسمن',
+    barcode: '6221001001011',
+    purchasePrice: 65,
+    sellingPrice: 75,
     quantity: 45,
-    supplierName: 'Fortune Distributors',
+    supplierName: 'شركة أرما للزيوت والصناعات',
     expiryDate: '2027-01-15',
-    unit: 'packet',
-    shelfLocation: 'Rack A - Shelf 2',
+    unit: 'زجاجة',
+    shelfLocation: 'رف أ - رف 2',
     imageUrl: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=300&q=80',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: 'PRD-1002',
-    name: 'Aashirvaad Shuddh Chakki Atta 5kg',
-    category: 'Grains & Atta',
-    barcode: '8901234001028',
-    purchasePrice: 240,
-    sellingPrice: 285,
+    name: 'دقيق فاخر المطبخ 1 كجم',
+    category: 'أرز ومكرونة وحبوب',
+    barcode: '6221001001028',
+    purchasePrice: 18,
+    sellingPrice: 24,
     quantity: 30,
-    supplierName: 'ITC Wholesale',
+    supplierName: 'المطاحن الحديثة',
     expiryDate: '2026-12-30',
-    unit: 'bag',
-    shelfLocation: 'Rack B - Ground Floor',
+    unit: 'كيس',
+    shelfLocation: 'رف ب - الطابق الأرضي',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: 'PRD-1003',
-    name: 'Tata Salt Vacuum Evaporated 1kg',
-    category: 'Spices & Salt',
-    barcode: '8901234001035',
-    purchasePrice: 22,
-    sellingPrice: 28,
+    name: 'ملح طعام نقي بونو 700 جم',
+    category: 'بهارات وعطارة وملح',
+    barcode: '6221001001035',
+    purchasePrice: 4,
+    sellingPrice: 6,
     quantity: 120,
-    supplierName: 'Tata Consumer Products',
-    unit: 'packet',
-    shelfLocation: 'Rack C - Shelf 1',
+    supplierName: 'شركة النصر للملاحات',
+    unit: 'كيس',
+    shelfLocation: 'رف ج - رف 1',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: 'PRD-1004',
-    name: 'Royal Sona Masoori Rice 5kg',
-    category: 'Rice & Pulses',
-    barcode: '8901234001042',
-    purchasePrice: 320,
-    sellingPrice: 380,
+    name: 'أرز مصري فاخر المطبخ 5 كجم',
+    category: 'أرز ومكرونة وحبوب',
+    barcode: '6221001001042',
+    purchasePrice: 140,
+    sellingPrice: 165,
     quantity: 8, // Low stock on purpose
-    supplierName: 'Sri Laxmi Rice Mill',
-    unit: 'bag',
-    shelfLocation: 'Rack B - Row 3',
+    supplierName: 'مضرب أرز الشرقية',
+    unit: 'شيكارة',
+    shelfLocation: 'رف ب - صف 3',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: 'PRD-1005',
-    name: 'Toor Dal Premium 1kg',
-    category: 'Rice & Pulses',
-    barcode: '8901234001059',
-    purchasePrice: 140,
-    sellingPrice: 168,
+    name: 'عدس أصفر مصري فاخر 1 كجم',
+    category: 'أرز ومكرونة وحبوب',
+    barcode: '6221001001059',
+    purchasePrice: 45,
+    sellingPrice: 55,
     quantity: 25,
-    supplierName: 'Karnataka Pulses Traders',
-    unit: 'kg',
-    shelfLocation: 'Rack C - Shelf 3',
+    supplierName: 'مؤسسة الحبوب المصرية',
+    unit: 'كجم',
+    shelfLocation: 'رف ج - رف 3',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: 'PRD-1006',
-    name: 'Tata Tea Premium 250g',
-    category: 'Beverages',
-    barcode: '8901234001066',
-    purchasePrice: 110,
-    sellingPrice: 135,
+    name: 'شاي العروسة ناعم 250 جم',
+    category: 'مشروبات وشاي وقهوة',
+    barcode: '6221001001066',
+    purchasePrice: 48,
+    sellingPrice: 56,
     quantity: 50,
-    supplierName: 'Tata Consumer Products',
-    unit: 'packet',
-    shelfLocation: 'Rack A - Shelf 1',
+    supplierName: 'شركة العروسة للشاي',
+    unit: 'علبة',
+    shelfLocation: 'رف أ - رف 1',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: 'PRD-1007',
-    name: 'Amul Butter Pasteurized 100g',
-    category: 'Dairy & Bakery',
-    barcode: '8901234001073',
-    purchasePrice: 50,
-    sellingPrice: 58,
+    name: 'جبنة بيضاء دومتي فيتا بلس 500 جم',
+    category: 'ألبان وأجبان ومخبوزات',
+    barcode: '6221001001073',
+    purchasePrice: 32,
+    sellingPrice: 38,
     quantity: 18,
-    supplierName: 'Amul Milk Dairy',
+    supplierName: 'شركة الصناعات الغذائية دومتي',
     expiryDate: '2026-08-20',
-    unit: 'pcs',
-    shelfLocation: 'Refrigerator 1',
+    unit: 'علبة',
+    shelfLocation: 'ثلاجة 1',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: 'PRD-1008',
-    name: 'Surf Excel Easy Wash Detergent Powder 1kg',
-    category: 'Household',
-    barcode: '8901234001080',
-    purchasePrice: 115,
-    sellingPrice: 142,
+    name: 'مسحوق غسيل أوتوماتيك إريال 1 كجم',
+    category: 'منظفات وعناية منزلية',
+    barcode: '6221001001080',
+    purchasePrice: 75,
+    sellingPrice: 90,
     quantity: 35,
-    supplierName: 'Hindustan Unilever',
-    unit: 'packet',
-    shelfLocation: 'Rack D - Shelf 4',
+    supplierName: 'بروكتر آند جامبل مصر',
+    unit: 'كيس',
+    shelfLocation: 'رف د - رف 4',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: 'PRD-1009',
-    name: 'Dettol Original Soap 125g (Pack of 3)',
-    category: 'Personal Care',
-    barcode: '8901234001097',
-    purchasePrice: 120,
-    sellingPrice: 148,
+    name: 'صابون ديتول الأصلي 120 جم (عرض 3 قطع)',
+    category: 'عناية شخصية وصابون',
+    barcode: '6221001001097',
+    purchasePrice: 60,
+    sellingPrice: 72,
     quantity: 5, // Low stock
-    supplierName: 'Reckitt Benckiser',
-    unit: 'box',
-    shelfLocation: 'Rack D - Shelf 1',
+    supplierName: 'ركيت بنكيزر مصر',
+    unit: 'باكيت',
+    shelfLocation: 'رف د - رف 1',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: 'PRD-1010',
-    name: 'Colgate Strong Teeth Toothpaste 100g',
-    category: 'Personal Care',
-    barcode: '8901234001103',
-    purchasePrice: 52,
-    sellingPrice: 65,
+    name: 'معجون أسنان سيجنال 2 لمكافحة التسوس 100 مل',
+    category: 'عناية شخصية وصابون',
+    barcode: '6221001001103',
+    purchasePrice: 28,
+    sellingPrice: 35,
     quantity: 40,
-    supplierName: 'Colgate-Palmolive',
-    unit: 'pcs',
-    shelfLocation: 'Rack D - Shelf 2',
+    supplierName: 'يونيليفر مشرق مصر',
+    unit: 'قطعة',
+    shelfLocation: 'رف د - رف 2',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: 'PRD-1011',
-    name: 'Britannia Good Day Butter Biscuits 100g',
-    category: 'Snacks & Biscuits',
-    barcode: '8901234001110',
-    purchasePrice: 22,
-    sellingPrice: 30,
+    name: 'بسكويت بيسكو مصر لوكس بالزبدة',
+    category: 'مقرمشات وبسكويت وشيكولاتة',
+    barcode: '6221001001110',
+    purchasePrice: 5,
+    sellingPrice: 7,
     quantity: 60,
-    supplierName: 'Britannia Agency',
-    unit: 'packet',
-    shelfLocation: 'Front Counter Display',
+    supplierName: 'شركة بسكو مصر',
+    unit: 'قطعة',
+    shelfLocation: 'كاونتر العرض الأمامي',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: 'PRD-1012',
-    name: 'Catch Turmeric Powder (Haldi) 100g',
-    category: 'Spices & Salt',
-    barcode: '8901234001127',
-    purchasePrice: 32,
-    sellingPrice: 42,
+    name: 'سكر أبيض نقي الأسرة 1 كجم',
+    category: 'سكر وسلع تموينية',
+    barcode: '6221001001127',
+    purchasePrice: 28,
+    sellingPrice: 34,
     quantity: 28,
-    supplierName: 'Catch Spices',
-    unit: 'packet',
-    shelfLocation: 'Rack C - Shelf 2',
+    supplierName: 'شركة السكر والصناعات التكاملية',
+    unit: 'كيس',
+    shelfLocation: 'رف ج - رف 2',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: 'PRD-1013',
-    name: 'Breakfast Festival Combo Pack (Tea + Biscuits)',
-    category: 'Combos & Packs',
-    barcode: '8901234009999',
-    purchasePrice: 132,
-    sellingPrice: 155,
+    name: 'عرض التوفير للفطور (شاي العروسة + بسكويت لوكس)',
+    category: 'عروض وباقات توفير',
+    barcode: '6221001009999',
+    purchasePrice: 53,
+    sellingPrice: 60,
     quantity: 15,
-    supplierName: 'In-House Combo',
-    unit: 'box',
+    supplierName: 'باقة داخلية للمحل',
+    unit: 'عرض',
     isCombo: true,
     comboItems: [
-      { productId: 'PRD-1006', productName: 'Tata Tea Premium 250g', qty: 1 },
-      { productId: 'PRD-1011', productName: 'Britannia Good Day Butter Biscuits 100g', qty: 1 }
+      { productId: 'PRD-1006', productName: 'شاي العروسة ناعم 250 جم', qty: 1 },
+      { productId: 'PRD-1011', productName: 'بسكويت بيسكو مصر لوكس بالزبدة', qty: 1 }
     ],
-    shelfLocation: 'Special Offer Display',
+    shelfLocation: 'عرض العروض الخاصة',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   }
@@ -341,45 +341,45 @@ export const INITIAL_SAMPLE_PRODUCTS: Product[] = [
 export const INITIAL_SAMPLE_CUSTOMERS: Customer[] = [
   {
     id: 'CUST-1001',
-    name: 'Suresh Raina',
-    phone: '9845011223',
-    email: 'suresh.r@example.com',
-    address: 'Flat 302, Green Acres Apt, Sector 4, Bangalore',
-    gstNumber: '29AAACG1234H1Z1',
+    name: 'أحمد محمود عبد الفتاح',
+    phone: '01011223344',
+    email: 'ahmed.m@example.com',
+    address: 'شارع النصر، الدقي، الجيزة',
+    gstNumber: '102-345-678',
     birthday: '1988-11-27',
-    notes: 'Regular morning customer. Prefers organic rice.',
-    totalSpent: 12450,
-    loyaltyPoints: 124,
-    storeCredit: 250,
+    notes: 'عميل دائم ومميز. يفضل المنتجات العضوية والفاخرة.',
+    totalSpent: 4850,
+    loyaltyPoints: 97,
+    storeCredit: 120,
     outstandingDues: 0,
-    tag: 'VIP',
+    tag: 'عميل مميز (VIP)',
     createdAt: new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString(),
   },
   {
     id: 'CUST-1002',
-    name: 'Priya Sharma',
-    phone: '9876500112',
-    email: 'priya.sharma@example.com',
-    address: 'House 45, Rosewood Layout, Sector 4',
+    name: 'سارة إبراهيم الشناوي',
+    phone: '01122334455',
+    email: 'sara.sh@example.com',
+    address: 'عمارة 12، شارع مصدق، الدقي',
     birthday: '1992-05-14',
-    notes: 'Wholesale order customer for apartment canteen.',
-    totalSpent: 28900,
-    loyaltyPoints: 289,
+    notes: 'طلبات أسبوعية منتظمة للأسرة والمكتب.',
+    totalSpent: 8650,
+    loyaltyPoints: 173,
     storeCredit: 0,
-    outstandingDues: 1200,
-    tag: 'Wholesale',
+    outstandingDues: 450,
+    tag: 'جملة ونصف جملة',
     createdAt: new Date(Date.now() - 60 * 24 * 3600 * 1000).toISOString(),
   },
   {
     id: 'CUST-1003',
-    name: 'Anil Deshmukh',
-    phone: '9900112233',
-    address: 'Near Temple Gate, Sector 3',
-    totalSpent: 3400,
-    loyaltyPoints: 34,
-    storeCredit: 100,
-    outstandingDues: 450,
-    tag: 'Regular',
+    name: 'كريم حسام الدين',
+    phone: '01233445566',
+    address: 'شارع محيي الدين أبو العز، المهندسين',
+    totalSpent: 1250,
+    loyaltyPoints: 25,
+    storeCredit: 50,
+    outstandingDues: 180,
+    tag: 'زبون عادي',
     createdAt: new Date(Date.now() - 15 * 24 * 3600 * 1000).toISOString(),
   }
 ];
@@ -387,38 +387,38 @@ export const INITIAL_SAMPLE_CUSTOMERS: Customer[] = [
 export const INITIAL_SAMPLE_SUPPLIERS: Supplier[] = [
   {
     id: 'SUP-101',
-    name: 'ITC Wholesale Ltd',
-    companyName: 'ITC Agro Products',
-    phone: '+91 98765 00002',
-    email: 'orders@example-supplier.com',
-    gstin: '29AAACI1234A1Z9',
-    address: 'ITC Industrial Park, Peenya, Bangalore',
-    paymentTerms: '15 Days Credit',
-    outstandingBalance: 14500,
+    name: 'شركة جهينة للصناعات الغذائية',
+    companyName: 'جهينة ش.م.م',
+    phone: '01001234561',
+    email: 'orders@juhayna.example.com',
+    gstin: '200-123-456',
+    address: 'المنطقة الصناعية الأولى، مدينة السادس من أكتوبر، الجيزة',
+    paymentTerms: 'آجل 15 يوماً',
+    outstandingBalance: 6500,
     createdAt: new Date().toISOString(),
   },
   {
     id: 'SUP-102',
-    name: 'Fortune Distributors',
-    companyName: 'Adani Wilmar Logistics',
-    phone: '+91 98765 00003',
-    email: 'supply@example-supplier.com',
-    gstin: '29AAACA9876B1Z2',
-    address: 'Godown 12, APMC Yard, Yeshwanthpur, Bangalore',
-    paymentTerms: 'Immediate / Cash',
+    name: 'شركة أرما للزيوت والصناعات',
+    companyName: 'أرما للصناعات الغذائية',
+    phone: '01001234562',
+    email: 'sales@arma.example.com',
+    gstin: '200-987-654',
+    address: 'المنطقة الصناعية، العاشر من رمضان',
+    paymentTerms: 'دفع فوري / نقدي',
     outstandingBalance: 0,
     createdAt: new Date().toISOString(),
   },
   {
     id: 'SUP-103',
-    name: 'Tata Consumer Products',
-    companyName: 'Tata Consumer Brands',
-    phone: '+91 98765 00004',
-    email: 'distributor@example-supplier.com',
-    gstin: '29AAACT5544C1Z0',
-    address: 'Tower B, Electronic City, Bangalore',
-    paymentTerms: '30 Days Net',
-    outstandingBalance: 8200,
+    name: 'شركة العروسة للشاي والمشروبات',
+    companyName: 'العروسة للتوزيع والتجارة',
+    phone: '01001234563',
+    email: 'supply@el-arosa.example.com',
+    gstin: '200-555-777',
+    address: 'طريق مصر الإسكندرية الزراعي، قليوب',
+    paymentTerms: 'آجل 30 يوماً',
+    outstandingBalance: 3200,
     createdAt: new Date().toISOString(),
   }
 ];
@@ -426,10 +426,10 @@ export const INITIAL_SAMPLE_SUPPLIERS: Supplier[] = [
 export const INITIAL_SAMPLE_EMPLOYEES: Employee[] = [
   {
     id: 'EMP-01',
-    name: 'Rajesh Kumar (Owner)',
-    phone: '+91 98765 00000',
-    address: 'Main Market Road, Bangalore',
-    salary: 60000,
+    name: 'محمد أحمد (المدير / المالك)',
+    phone: '01012345678',
+    address: 'الدقي، الجيزة',
+    salary: 15000,
     joiningDate: '2023-01-01',
     role: 'Owner',
     pin: '1234',
@@ -437,10 +437,10 @@ export const INITIAL_SAMPLE_EMPLOYEES: Employee[] = [
   },
   {
     id: 'EMP-02',
-    name: 'Kavitha S (Head Cashier)',
-    phone: '+91 98765 00005',
-    address: 'BTM Layout 2nd Stage, Bangalore',
-    salary: 22000,
+    name: 'هاني عبد الله (كاشير رئيسي)',
+    phone: '01123456789',
+    address: 'فيصل، الجيزة',
+    salary: 6000,
     joiningDate: '2024-03-15',
     role: 'Cashier',
     pin: '1111',
@@ -448,10 +448,10 @@ export const INITIAL_SAMPLE_EMPLOYEES: Employee[] = [
   },
   {
     id: 'EMP-03',
-    name: 'Ramesh Gowda (Stock Manager)',
-    phone: '+91 98765 00006',
-    address: 'HSR Layout Sector 1, Bangalore',
-    salary: 25000,
+    name: 'مصطفى علي (مسؤول المخزن)',
+    phone: '01234567890',
+    address: 'الهرم، الجيزة',
+    salary: 6500,
     joiningDate: '2024-01-10',
     role: 'Inventory Staff',
     pin: '2222',
@@ -462,32 +462,32 @@ export const INITIAL_SAMPLE_EMPLOYEES: Employee[] = [
 export const INITIAL_SAMPLE_EXPENSES: Expense[] = [
   {
     id: 'EXP-101',
-    title: 'Shop Monthly Rent',
+    title: 'إيجار المحل الشهري',
     category: 'Rent',
-    amount: 18000,
+    amount: 12000,
     date: new Date().toISOString().split('T')[0],
     paymentMode: 'Bank',
-    notes: 'Paid to shop landlord Mr. Varma via NEFT',
+    notes: 'تم التحويل لحساب صاحب العقار عبر بنك مصر',
     createdAt: new Date().toISOString(),
   },
   {
     id: 'EXP-102',
-    title: 'BESCOM Electricity Bill',
+    title: 'فاتورة الكهرباء التجارية',
     category: 'Electricity',
-    amount: 3200,
+    amount: 1850,
     date: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString().split('T')[0],
     paymentMode: 'UPI',
-    notes: 'Refrigeration and shop lights bill',
+    notes: 'فاتورة كهرباء الثلاجات والإنارة عبر فوري/إنستاباي',
     createdAt: new Date().toISOString(),
   },
   {
     id: 'EXP-103',
-    title: 'Airtel Broadband Internet',
+    title: 'اشتراك الإنترنت الأرضي فايبر (WE)',
     category: 'Internet',
-    amount: 999,
+    amount: 380,
     date: new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString().split('T')[0],
     paymentMode: 'UPI',
-    notes: 'Monthly high speed plan',
+    notes: 'باقة إنترنت فائقة السرعة للمحل',
     createdAt: new Date().toISOString(),
   }
 ];
@@ -495,79 +495,79 @@ export const INITIAL_SAMPLE_EXPENSES: Expense[] = [
 export const INITIAL_SAMPLE_SALES: Sale[] = [
   {
     id: 'SALE-101',
-    invoiceNumber: 'INV-2026-0001',
+    invoiceNumber: 'فاتورة-2026-0001',
     dateTime: new Date(Date.now() - 3600 * 1000 * 3).toISOString(),
     customerId: 'CUST-1001',
-    customerName: 'Suresh Raina',
-    customerPhone: '9845011223',
+    customerName: 'أحمد محمود عبد الفتاح',
+    customerPhone: '01011223344',
     items: [
       {
         id: 'SI-1',
         productId: 'PRD-1001',
-        productName: 'Fortune Sunlite Sunflower Oil 1L',
-        barcode: '8901234001011',
-        unitPurchasePrice: 135,
-        unitSellingPrice: 160,
+        productName: 'زيت ذرة عافية نقي 800 مل',
+        barcode: '6221001001011',
+        unitPurchasePrice: 65,
+        unitSellingPrice: 75,
         quantity: 2,
-        totalPrice: 320,
+        totalPrice: 150,
       },
       {
         id: 'SI-2',
         productId: 'PRD-1003',
-        productName: 'Tata Salt Vacuum Evaporated 1kg',
-        barcode: '8901234001035',
-        unitPurchasePrice: 22,
-        unitSellingPrice: 28,
+        productName: 'ملح طعام نقي بونو 700 جم',
+        barcode: '6221001001035',
+        unitPurchasePrice: 4,
+        unitSellingPrice: 6,
         quantity: 1,
-        totalPrice: 28,
+        totalPrice: 6,
       }
     ],
-    subtotal: 348,
+    subtotal: 156,
     taxPercent: 0,
     taxAmount: 0,
-    discountAmount: 8,
-    totalAmount: 340,
-    receivedAmount: 500,
-    changeAmount: 160,
+    discountAmount: 6,
+    totalAmount: 150,
+    receivedAmount: 200,
+    changeAmount: 50,
     paymentMode: 'Cash',
-    totalProfit: 48,
+    totalProfit: 16,
     status: 'Completed',
-    cashierName: 'Kavitha S',
+    cashierName: 'هاني عبد الله',
   },
   {
     id: 'SALE-102',
-    invoiceNumber: 'INV-2026-0002',
+    invoiceNumber: 'فاتورة-2026-0002',
     dateTime: new Date(Date.now() - 3600 * 1000 * 1.5).toISOString(),
     customerId: 'CUST-1002',
-    customerName: 'Priya Sharma',
-    customerPhone: '9876500112',
+    customerName: 'سارة إبراهيم الشناوي',
+    customerPhone: '01122334455',
     items: [
       {
         id: 'SI-3',
-        productId: 'PRD-1002',
-        productName: 'Aashirvaad Shuddh Chakki Atta 5kg',
-        barcode: '8901234001028',
-        unitPurchasePrice: 240,
-        unitSellingPrice: 285,
+        productId: 'PRD-1006',
+        productName: 'شاي العروسة ناعم 250 جم',
+        barcode: '6221001001066',
+        unitPurchasePrice: 48,
+        unitSellingPrice: 56,
         quantity: 1,
-        totalPrice: 285,
+        totalPrice: 56,
       },
       {
         id: 'SI-4',
         productId: 'PRD-1007',
-        productName: 'Amul Butter Pasteurized 100g',
-        barcode: '8901234001073',
-        unitPurchasePrice: 50,
-        unitSellingPrice: 58,
+        productName: 'جبنة بيضاء دومتي فيتا بلس 500 جم',
+        barcode: '6221001001073',
+        unitPurchasePrice: 32,
+        unitSellingPrice: 38,
         quantity: 2,
-        totalPrice: 116,
+        totalPrice: 76,
       }
     ],
-    subtotal: 401,
+    subtotal: 132,
     taxPercent: 0,
     taxAmount: 0,
-    discountAmount: 1,
-    totalAmount: 400,
+    discountAmount: 2,
+    totalAmount: 130,
     receivedAmount: 400,
     changeAmount: 0,
     paymentMode: 'UPI',
@@ -603,31 +603,94 @@ class SQLiteStorageEngine {
 
   constructor() {
     this.settings = this.loadData(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
+    if (!this.settings.currencySymbol || this.settings.currencySymbol === '₹') {
+      this.settings.currencySymbol = 'ج.م';
+      this.settings.defaultTaxPercent = 14;
+      this.settings.shopName = 'سوبر ماركت النور';
+      this.settings.address = 'شارع التحرير، الدقي، الجيزة، مصر';
+      this.settings.phone = '01012345678';
+      this.settings.gstNumber = '100-234-567';
+      this.settings.invoicePrefix = 'فاتورة';
+      this.settings.upiId = 'elnour@instapay';
+      this.settings.merchantName = 'سوبر ماركت النور';
+      this.settings.defaultPaymentNote = 'شكراً لتسوقكم من سوبر ماركت النور';
+      this.settings.upiReceiptFooter = 'تم الدفع الإلكتروني بنجاح عبر إنستاباي / المحفظة';
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(this.settings));
+    }
+
     this.products = this.loadData(STORAGE_KEYS.PRODUCTS, INITIAL_SAMPLE_PRODUCTS);
+    // If user has old default product data
+    if (this.products.length > 0 && this.products[0].id === 'PRD-1001' && this.products[0].name.includes('Fortune Sunlite')) {
+      this.products = INITIAL_SAMPLE_PRODUCTS;
+      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(this.products));
+    }
+
     this.sales = this.loadData(STORAGE_KEYS.SALES, INITIAL_SAMPLE_SALES);
+    if (this.sales.length > 0 && this.sales[0].id === 'SALE-101' && this.sales[0].customerName.includes('Suresh')) {
+      this.sales = INITIAL_SAMPLE_SALES;
+      localStorage.setItem(STORAGE_KEYS.SALES, JSON.stringify(this.sales));
+    }
+
     this.stockLogs = this.loadData(STORAGE_KEYS.STOCK_LOGS, []);
     this.customers = this.loadData(STORAGE_KEYS.CUSTOMERS, INITIAL_SAMPLE_CUSTOMERS);
+    if (this.customers.length > 0 && this.customers[0].id === 'CUST-1001' && this.customers[0].name.includes('Suresh')) {
+      this.customers = INITIAL_SAMPLE_CUSTOMERS;
+      localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(this.customers));
+    }
+
     this.suppliers = this.loadData(STORAGE_KEYS.SUPPLIERS, INITIAL_SAMPLE_SUPPLIERS);
+    if (this.suppliers.length > 0 && this.suppliers[0].id === 'SUP-101' && this.suppliers[0].name.includes('ITC')) {
+      this.suppliers = INITIAL_SAMPLE_SUPPLIERS;
+      localStorage.setItem(STORAGE_KEYS.SUPPLIERS, JSON.stringify(this.suppliers));
+    }
+
     this.purchaseOrders = this.loadData(STORAGE_KEYS.PURCHASE_ORDERS, []);
     this.expenses = this.loadData(STORAGE_KEYS.EXPENSES, INITIAL_SAMPLE_EXPENSES);
+    if (this.expenses.length > 0 && this.expenses[0].id === 'EXP-101' && this.expenses[0].title.includes('Shop Monthly Rent')) {
+      this.expenses = INITIAL_SAMPLE_EXPENSES;
+      localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(this.expenses));
+    }
+
     this.employees = this.loadData(STORAGE_KEYS.EMPLOYEES, INITIAL_SAMPLE_EMPLOYEES);
+    if (this.employees.length > 0 && this.employees[0].id === 'EMP-01' && this.employees[0].name.includes('Rajesh')) {
+      this.employees = INITIAL_SAMPLE_EMPLOYEES;
+      localStorage.setItem(STORAGE_KEYS.EMPLOYEES, JSON.stringify(this.employees));
+    }
+
     this.attendance = this.loadData(STORAGE_KEYS.ATTENDANCE, []);
     this.heldBills = this.loadData(STORAGE_KEYS.HELD_BILLS, []);
     this.returns = this.loadData(STORAGE_KEYS.RETURNS, []);
     this.auditLogs = this.loadData(STORAGE_KEYS.AUDIT_LOGS, []);
     this.branches = this.loadData(STORAGE_KEYS.BRANCHES, INITIAL_SAMPLE_BRANCHES);
+    if (this.branches.length > 0 && this.branches[0].id === 'BRANCH-01' && this.branches[0].name.includes('Main Supermarket')) {
+      this.branches = INITIAL_SAMPLE_BRANCHES;
+      localStorage.setItem(STORAGE_KEYS.BRANCHES, JSON.stringify(this.branches));
+    }
+
     this.cashShifts = this.loadData(STORAGE_KEYS.CASH_SHIFTS, []);
+    let shiftsNeedMigration = false;
+    this.cashShifts = this.cashShifts.map(shift => {
+      if (shift.cashierId) return shift;
+      const owner = this.employees.find(employee => employee.name === shift.cashierName);
+      if (!owner) return shift;
+      shiftsNeedMigration = true;
+      return { ...shift, cashierId: owner.id };
+    });
+    if (shiftsNeedMigration) this.persistCashShifts();
     this.cashTxns = this.loadData(STORAGE_KEYS.CASH_TXNS, []);
     this.priceHistory = this.loadData(STORAGE_KEYS.PRICE_HISTORY, []);
     this.categories = this.loadData(STORAGE_KEYS.CATEGORIES, INITIAL_SAMPLE_CATEGORIES);
+    if (this.categories.length > 0 && this.categories[0].id === 'CAT-1' && this.categories[0].name.includes('Grains & Atta')) {
+      this.categories = INITIAL_SAMPLE_CATEGORIES;
+      localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(this.categories));
+    }
+
     this.customerLedgers = this.loadData(STORAGE_KEYS.CUSTOMER_LEDGERS, []);
     this.recycleBin = this.loadData(STORAGE_KEYS.RECYCLE_BIN, []);
     this.updates = this.loadData(STORAGE_KEYS.UPDATES, INITIAL_SAMPLE_UPDATES);
 
-    this.currentUser = this.employees[0] || null;
+    this.currentUser = null;
     
-    // Auto initialize an open cash register shift if none open today
-    this.ensureActiveCashShift();
   }
 
   private loadData<T>(key: string, defaultValue: T): T {
@@ -658,6 +721,16 @@ class SQLiteStorageEngine {
   public verifyEmployeePin(pin: string): Employee | null {
     const emp = this.employees.find(e => e.pin === pin && e.status === 'Active');
     return emp || null;
+  }
+
+  public verifyEmployeeCredentials(phone: string, pin: string): Employee | null {
+    const normalizedPhone = phone.replace(/\D/g, '');
+    const employee = this.employees.find(
+      candidate => candidate.phone.replace(/\D/g, '') === normalizedPhone &&
+        candidate.pin === pin &&
+        candidate.status === 'Active'
+    );
+    return employee || null;
   }
 
   // --- Settings ---
@@ -1046,17 +1119,31 @@ class SQLiteStorageEngine {
   }
 
   public saveEmployee(empData: Partial<Employee> & { name: string; phone: string; role: any; pin: string }): Employee {
+    const phone = empData.phone.replace(/\D/g, '');
+    if (phone.length < 7) {
+      throw new Error('رقم الهاتف يجب أن يحتوي على 7 أرقام على الأقل.');
+    }
+    if (!/^\d{4}$/.test(empData.pin)) {
+      throw new Error('رمز PIN يجب أن يتكون من 4 أرقام.');
+    }
+    const duplicatePhone = this.employees.find(employee =>
+      employee.id !== empData.id && employee.phone.replace(/\D/g, '') === phone
+    );
+    if (duplicatePhone) {
+      throw new Error('رقم الهاتف مستخدم بالفعل لموظف آخر.');
+    }
+
     let emp: Employee;
     if (empData.id) {
       const idx = this.employees.findIndex(e => e.id === empData.id);
       if (idx !== -1) {
-        emp = { ...this.employees[idx], ...empData };
+        emp = { ...this.employees[idx], ...empData, phone };
         this.employees[idx] = emp;
       } else {
         emp = {
           id: empData.id,
           name: empData.name,
-          phone: empData.phone,
+          phone,
           address: empData.address || '',
           salary: empData.salary || 18000,
           joiningDate: empData.joiningDate || new Date().toISOString().split('T')[0],
@@ -1071,7 +1158,7 @@ class SQLiteStorageEngine {
       emp = {
         id: `EMP-${String(this.employees.length + 1).padStart(2, '0')}`,
         name: empData.name,
-        phone: empData.phone,
+        phone,
         address: empData.address || '',
         salary: empData.salary || 18000,
         joiningDate: empData.joiningDate || new Date().toISOString().split('T')[0],
@@ -1178,6 +1265,10 @@ class SQLiteStorageEngine {
     customerId?: string,
     splitPayments?: any[]
   ): Sale {
+    const cashier = this.currentUser;
+    if (!cashier) throw new Error('يجب تسجيل الدخول قبل تسجيل عملية بيع.');
+    const shift = this.getCurrentCashShift(cashier.id);
+    if (!shift) throw new Error('يجب فتح شفت نقدية للمستخدم الحالي قبل بدء البيع.');
     const now = new Date();
     const invoiceNumber = `${this.settings.invoicePrefix}-${now.getFullYear()}-${String(this.sales.length + 1).padStart(4, '0')}`;
 
@@ -1236,7 +1327,9 @@ class SQLiteStorageEngine {
       totalProfit: totalProfit - discountAmount,
       status: 'Completed',
       notes,
-      cashierName: this.currentUser?.name || 'Cashier',
+      cashierName: cashier.name,
+      cashierId: cashier.id,
+      shiftId: shift.id,
     };
 
     // Update customer stats if matched
@@ -1559,42 +1652,41 @@ class SQLiteStorageEngine {
   }
 
   // --- MODULE 34: Cash Register Drawer Shifts ---
-  private ensureActiveCashShift() {
-    const openShift = this.cashShifts.find(s => s.status === 'Open');
-    if (!openShift) {
-      const newShift: CashRegisterShift = {
-        id: `SHIFT-${Date.now()}`,
-        cashierName: this.currentUser?.name || 'Main Cashier',
-        startTime: new Date().toISOString(),
-        openingCash: 2000,
-        cashInTotal: 0,
-        cashOutTotal: 0,
-        safeDepositTotal: 0,
-        status: 'Open',
-      };
-      this.cashShifts.unshift(newShift);
-      this.persistCashShifts();
-    }
-  }
-
-  public getCurrentCashShift(): CashRegisterShift | undefined {
-    return this.cashShifts.find(s => s.status === 'Open');
+  public getCurrentCashShift(employeeId = this.currentUser?.id): CashRegisterShift | undefined {
+    if (!employeeId) return undefined;
+    const employee = this.employees.find(candidate => candidate.id === employeeId);
+    return this.cashShifts.find(shift =>
+      shift.status === 'Open' &&
+      (shift.cashierId ? shift.cashierId === employeeId : shift.cashierName === employee?.name)
+    );
   }
 
   public getCashShifts(): CashRegisterShift[] {
     return [...this.cashShifts];
   }
 
-  public openCashShift(openingCash: number, notes?: string): CashRegisterShift {
-    const open = this.getCurrentCashShift();
-    if (open) {
-      open.status = 'Closed';
-      open.endTime = new Date().toISOString();
+  public openCashShift(openingCash: number, notes?: string, cashierId = this.currentUser?.id): CashRegisterShift {
+    const openedBy = this.currentUser;
+    if (!openedBy) throw new Error('يجب تسجيل الدخول قبل فتح الشفت.');
+    if (!cashierId) throw new Error('يجب تحديد الموظف المسؤول عن الشفت.');
+    const cashier = this.employees.find(employee => employee.id === cashierId && employee.status === 'Active');
+    if (!cashier) throw new Error('الموظف المحدد غير موجود أو غير نشط.');
+    if (cashierId !== openedBy.id && openedBy.role !== 'Owner' && openedBy.role !== 'Manager') {
+      throw new Error('لا تملك صلاحية فتح شفت لموظف آخر.');
+    }
+    if (this.getCurrentCashShift(cashierId)) {
+      throw new Error('لدى هذا الموظف شفت مفتوح بالفعل.');
+    }
+    if (!Number.isFinite(Number(openingCash)) || Number(openingCash) < 0) {
+      throw new Error('مبلغ العهدة الافتتاحية غير صحيح.');
     }
 
     const newShift: CashRegisterShift = {
       id: `SHIFT-${Date.now()}`,
-      cashierName: this.currentUser?.name || 'Cashier',
+      cashierName: cashier.name,
+      cashierId: cashier.id,
+      openedByEmployeeId: openedBy.id,
+      openedByName: openedBy.name,
       startTime: new Date().toISOString(),
       openingCash: Number(openingCash),
       cashInTotal: 0,
@@ -1606,7 +1698,7 @@ class SQLiteStorageEngine {
 
     this.cashShifts.unshift(newShift);
     this.persistCashShifts();
-    this.addAuditLog(newShift.cashierName, 'Open Cash Register', `Opened shift with ${openingCash} float`);
+    this.addAuditLog(openedBy.name, 'Open Cash Register', `Opened shift ${newShift.id} for ${cashier.name} with ${openingCash} float`);
     return newShift;
   }
 
@@ -1617,6 +1709,9 @@ class SQLiteStorageEngine {
     return this.sales
       .filter(s => {
         if (s.status !== 'Completed') return false;
+        if (s.shiftId) return s.shiftId === shift.id;
+        if (shift.cashierId && s.cashierId && s.cashierId !== shift.cashierId) return false;
+        if (shift.cashierId && !s.cashierId && s.cashierName !== shift.cashierName) return false;
         if (s.dateTime < startTime) return false;
         if (endTime && s.dateTime > endTime) return false;
         return true;
@@ -1652,6 +1747,9 @@ class SQLiteStorageEngine {
 
     const shiftSales = this.sales.filter(s => {
       if (s.status !== 'Completed') return false;
+      if (s.shiftId) return s.shiftId === shift.id;
+      if (shift.cashierId && s.cashierId && s.cashierId !== shift.cashierId) return false;
+      if (shift.cashierId && !s.cashierId && s.cashierName !== shift.cashierName) return false;
       if (s.dateTime < startTime) return false;
       if (endTime && s.dateTime > endTime) return false;
       return true;
@@ -1711,9 +1809,19 @@ class SQLiteStorageEngine {
     };
   }
 
-  public closeCashShift(closingCash: number, notes?: string): CashRegisterShift | undefined {
-    const shift = this.getCurrentCashShift();
-    if (!shift) return undefined;
+  public closeCashShift(closingCash: number, notes?: string, shiftId?: string): CashRegisterShift | undefined {
+    const user = this.currentUser;
+    if (!user) throw new Error('يجب تسجيل الدخول قبل إغلاق الشفت.');
+    if (!Number.isFinite(Number(closingCash)) || Number(closingCash) < 0) {
+      throw new Error('مبلغ الجرد الفعلي غير صحيح.');
+    }
+    const shift = shiftId
+      ? this.cashShifts.find(candidate => candidate.id === shiftId && candidate.status === 'Open')
+      : this.getCurrentCashShift(user.id);
+    if (!shift) throw new Error('هذا الشفت لم يعد مفتوحاً.');
+    if (shift.cashierId !== user.id && user.role !== 'Owner' && user.role !== 'Manager') {
+      throw new Error('لا تملك صلاحية إغلاق شفت موظف آخر.');
+    }
 
     const { expectedCash } = this.getShiftExpectedCash(shift);
     const diff = Number(closingCash) - expectedCash;
@@ -1726,28 +1834,38 @@ class SQLiteStorageEngine {
     shift.notes = notes;
 
     this.persistCashShifts();
-    this.addAuditLog(shift.cashierName, 'Close Cash Register', `Closed shift. Count: ${closingCash}, Expected: ${expectedCash}, Diff: ${diff}`);
+    this.addAuditLog(user.name, 'Close Cash Register', `Closed shift ${shift.id} for ${shift.cashierName}. Count: ${closingCash}, Expected: ${expectedCash}, Diff: ${diff}`);
     return shift;
   }
 
-  public addCashTransaction(type: 'CashIn' | 'CashOut' | 'SafeDeposit', amount: number, reason: string): CashTransaction {
-    const shift = this.getCurrentCashShift();
+  public addCashTransaction(type: 'CashIn' | 'CashOut' | 'SafeDeposit', amount: number, reason: string, shiftId?: string): CashTransaction {
+    const user = this.currentUser;
+    if (!user) throw new Error('يجب تسجيل الدخول قبل تسجيل حركة نقدية.');
+    const shift = shiftId
+      ? this.cashShifts.find(candidate => candidate.id === shiftId && candidate.status === 'Open')
+      : this.getCurrentCashShift(user.id);
+    if (!shift) throw new Error('يجب فتح شفت قبل تسجيل حركة نقدية.');
+    if (shift.cashierId !== user.id && user.role !== 'Owner' && user.role !== 'Manager') {
+      throw new Error('لا تملك صلاحية تسجيل حركة على شفت موظف آخر.');
+    }
+    if (!Number.isFinite(Number(amount)) || Number(amount) <= 0 || !reason.trim()) {
+      throw new Error('أدخل مبلغاً صحيحاً وسبب الحركة.');
+    }
     const txn: CashTransaction = {
       id: `CASHTXN-${Date.now()}`,
-      shiftId: shift?.id || 'GLOBAL',
+      shiftId: shift.id,
       timestamp: new Date().toISOString(),
       type,
       amount: Number(amount),
       reason,
-      cashierName: this.currentUser?.name || 'Cashier',
+      cashierName: user.name,
+      cashierId: user.id,
     };
 
-    if (shift) {
-      if (type === 'CashIn') shift.cashInTotal += Number(amount);
-      if (type === 'CashOut') shift.cashOutTotal += Number(amount);
-      if (type === 'SafeDeposit') shift.safeDepositTotal += Number(amount);
-      this.persistCashShifts();
-    }
+    if (type === 'CashIn') shift.cashInTotal += Number(amount);
+    if (type === 'CashOut') shift.cashOutTotal += Number(amount);
+    if (type === 'SafeDeposit') shift.safeDepositTotal += Number(amount);
+    this.persistCashShifts();
 
     this.cashTxns.unshift(txn);
     this.persistCashTxns();
@@ -2024,6 +2142,8 @@ class SQLiteStorageEngine {
         this.persistHeldBills();
         this.persistReturns();
         this.persistAuditLogs();
+        this.persistCashShifts();
+        this.persistCashTxns();
         return true;
       }
       return false;
@@ -2047,6 +2167,8 @@ class SQLiteStorageEngine {
     this.heldBills = [];
     this.returns = [];
     this.auditLogs = [];
+    this.cashShifts = [];
+    this.cashTxns = [];
 
     this.persistProducts();
     this.persistSales();
@@ -2138,4 +2260,3 @@ class SQLiteStorageEngine {
 }
 
 export const sqliteDB = new SQLiteStorageEngine();
-

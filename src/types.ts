@@ -172,6 +172,8 @@ export interface Sale {
   status: 'Completed' | 'Cancelled' | 'Refunded' | 'Partially Refunded';
   notes?: string;
   cashierName?: string;
+  cashierId?: string;
+  shiftId?: string;
   merchantUpiId?: string;
   paymentNote?: string;
   paymentStatus?: 'Paid' | 'Pending';
@@ -342,6 +344,9 @@ export interface IncomingStockLog {
 export interface CashRegisterShift {
   id: string;
   cashierName: string;
+  cashierId?: string;
+  openedByEmployeeId?: string;
+  openedByName?: string;
   startTime: string; // ISO
   endTime?: string;  // ISO
   openingCash: number;
@@ -363,6 +368,7 @@ export interface CashTransaction {
   amount: number;
   reason: string;
   cashierName: string;
+  cashierId?: string;
 }
 
 export interface PriceHistoryRecord {
@@ -445,4 +451,3 @@ export interface DashboardMetrics {
   totalCustomerDues: number;
   heldBillsCount: number;
 }
-

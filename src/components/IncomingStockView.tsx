@@ -53,14 +53,14 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
 
   // Form state for brand new product creation
   const [newProdName, setNewProdName] = useState('');
-  const [newProdCategory, setNewProdCategory] = useState('Grains & Atta');
+  const [newProdCategory, setNewProdCategory] = useState('حبوب وبقوليات');
   const [newProdQty, setNewProdQty] = useState('20');
   const [newProdPurchasePrice, setNewProdPurchasePrice] = useState('100');
   const [newProdSellingPrice, setNewProdSellingPrice] = useState('125');
   const [newProdSupplier, setNewProdSupplier] = useState('');
 
   const barcodeRef = useRef<HTMLInputElement | null>(null);
-  const currency = settings.currencySymbol || '₹';
+  const currency = settings.currencySymbol || 'ج.م';
 
   useEffect(() => {
     barcodeRef.current?.focus();
@@ -96,7 +96,7 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
 
     const qty = parseInt(addQty);
     if (isNaN(qty) || qty <= 0) {
-      alert('Please enter a valid stock quantity to add.');
+      alert('يرجى إدخال كمية صحيحة لإضافتها للمخزون.');
       return;
     }
 
@@ -108,7 +108,7 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
       supplierNameInput
     );
 
-    alert(`Successfully added ${qty} units to "${scannedProduct.name}"!`);
+    alert(`تم بنجاح إضافة ${qty} وحدة إلى صنف "${scannedProduct.name}"!`);
 
     // Reset lookup form
     setScannedProduct(null);
@@ -120,7 +120,7 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
   const handleAddNewProductSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProdName || !newProdPurchasePrice || !newProdSellingPrice || !newProdQty) {
-      alert('Please fill in all required product fields.');
+      alert('يرجى ملء جميع الحقول المطلوبة للمنتج.');
       return;
     }
 
@@ -134,7 +134,7 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
       supplierName: newProdSupplier,
     });
 
-    alert(`Successfully registered & added stock for "${newProdName}"!`);
+    alert(`تم بنجاح تسجيل وإضافة الصنف الجديد "${newProdName}" إلى المخزن!`);
 
     // Reset form
     setScannedProduct(null);
@@ -151,10 +151,10 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <PackagePlus className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-            Incoming Stock Management
+            إدارة البضاعة الواردة واستلام المخزون
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Scan supplier packages to quickly increase stock levels or add new arrivals to inventory.
+            مسح كراتين وشحنات الموردين لزيادة رصيد المخزن فوراً أو إدخال بضاعة جديدة لأول مرة.
           </p>
         </div>
 
@@ -163,7 +163,7 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
           className="px-4 py-2 bg-emerald-100 dark:bg-emerald-950/60 hover:bg-emerald-200 text-emerald-800 dark:text-emerald-300 rounded-xl font-semibold text-xs flex items-center gap-2 transition"
         >
           <Camera className="w-4 h-4 text-emerald-600" />
-          <span>Open Camera Scanner</span>
+          <span>فتح كاميرا الباركود</span>
         </button>
       </div>
 
@@ -174,16 +174,16 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
           
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
-              Step 1: Scan or Type Product Barcode
+              الخطوة 1: امسح أو اكتب باركود الصنف
             </label>
 
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <Barcode className="w-5 h-5 absolute left-3 top-3 text-slate-400" />
+                <Barcode className="w-5 h-5 absolute right-3 top-3 text-slate-400" />
                 <input
                   ref={barcodeRef}
                   type="text"
-                  placeholder="Scan USB barcode or enter barcode digits..."
+                  placeholder="امسح بقارئ الباركود أو اكتب الأرقام..."
                   value={barcodeInput}
                   onChange={e => {
                     setBarcodeInput(e.target.value);
@@ -194,7 +194,7 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
                       lookupBarcode(barcodeInput);
                     }
                   }}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-sm font-mono outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full pr-10 pl-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-sm font-mono outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -202,7 +202,7 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
                 onClick={() => lookupBarcode(barcodeInput)}
                 className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-xs transition shrink-0"
               >
-                Search Item
+                بحث عن الصنف
               </button>
             </div>
           </div>
@@ -213,20 +213,20 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
               <div className="flex items-start justify-between border-b border-emerald-200/80 dark:border-emerald-800 pb-3">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-200 dark:bg-emerald-800 text-emerald-900 dark:text-emerald-100">
-                    Product Found in Local DB
+                    تم العثور على الصنف في قاعدة البيانات
                   </span>
                   <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mt-1">
                     {scannedProduct.name}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">
-                    Barcode: {scannedProduct.barcode} | Category: {scannedProduct.category}
+                    الباركود: {scannedProduct.barcode} | القسم: {scannedProduct.category}
                   </p>
                 </div>
 
-                <div className="text-right">
-                  <div className="text-xs text-slate-500 dark:text-slate-400">Current Stock</div>
+                <div className="text-left">
+                  <div className="text-xs text-slate-500 dark:text-slate-400">الرصيد الحالي بالمخزن</div>
                   <div className="text-xl font-black font-mono text-emerald-700 dark:text-emerald-300">
-                    {scannedProduct.quantity} {scannedProduct.unit || 'pcs'}
+                    {scannedProduct.quantity} {scannedProduct.unit || 'قطعة'}
                   </div>
                 </div>
               </div>
@@ -235,7 +235,7 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Add Stock Quantity *
+                      الكمية المضافة للوارد *
                     </label>
                     <input
                       type="number"
@@ -249,11 +249,11 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Supplier Name
+                      اسم المورد / الشركة
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Fortune Wholesalers"
+                      placeholder="مثال: شركة جهينة / الأهرام للتجارة"
                       value={supplierNameInput}
                       onChange={e => setSupplierNameInput(e.target.value)}
                       className="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs"
@@ -264,7 +264,7 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                      Purchase Cost ({currency})
+                      سعر الشراء الجديد ({currency})
                     </label>
                     <input
                       type="number"
@@ -277,7 +277,7 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
 
                   <div>
                     <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                      Selling Price ({currency})
+                      سعر البيع للمستهلك ({currency})
                     </label>
                     <input
                       type="number"
@@ -294,7 +294,7 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
                   className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 text-xs"
                 >
                   <Plus className="w-4 h-4" />
-                  Confirm & Update Stock (+{addQty} Units)
+                  تأكيد وإضافة الرصيد (+{addQty} وحدة)
                 </button>
               </form>
             </div>
@@ -306,20 +306,20 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
               <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
                 <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
                 <div>
-                  <h4 className="font-bold text-sm">Product Not Found in Local Database</h4>
-                  <p className="text-xs opacity-90">Barcode: <strong className="font-mono">{barcodeInput}</strong> is new. Enter details below to add to inventory.</p>
+                  <h4 className="font-bold text-sm">هذا الباركود غير مسجل مسبقاً</h4>
+                  <p className="text-xs opacity-90">الباركود: <strong className="font-mono">{barcodeInput}</strong> صنف جديد. أدخل البيانات أدناه لحفظه وإضافته للمخزن.</p>
                 </div>
               </div>
 
               <form onSubmit={handleAddNewProductSubmit} className="space-y-3 pt-2 border-t border-amber-200 dark:border-amber-800">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Product Name *
+                    اسم الصنف *
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Britannia Good Day Biscuits 100g"
+                    placeholder="مثال: شاي العروسة ناعم 250 جم"
                     value={newProdName}
                     onChange={e => setNewProdName(e.target.value)}
                     className="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs outline-none"
@@ -329,7 +329,7 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Category *
+                      القسم والتصنيف *
                     </label>
                     <input
                       type="text"
@@ -342,7 +342,7 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Initial Quantity *
+                      الكمية الواردة *
                     </label>
                     <input
                       type="number"
@@ -357,7 +357,7 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Purchase Cost ({currency}) *
+                      سعر الشراء ({currency}) *
                     </label>
                     <input
                       type="number"
@@ -371,7 +371,7 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Selling Price ({currency}) *
+                      سعر البيع ({currency}) *
                     </label>
                     <input
                       type="number"
@@ -388,7 +388,7 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
                   type="submit"
                   className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow-md transition text-xs"
                 >
-                  Save New Item to Local SQLite Database
+                  حفظ الصنف الجديد في قاعدة البيانات
                 </button>
               </form>
             </div>
@@ -402,18 +402,18 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
             <div className="flex items-center gap-2 mb-4">
               <History className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">
-                Stock Addition Audit History
+                سجل حركات البضاعة الواردة
               </h3>
             </div>
 
             {stockLogs.length === 0 ? (
               <div className="text-center py-12 text-slate-400 dark:text-slate-500 space-y-2">
                 <Truck className="w-10 h-10 mx-auto stroke-1" />
-                <p className="text-sm font-medium">No stock logs recorded yet.</p>
-                <p className="text-xs">Incoming stock entries from suppliers will appear here.</p>
+                <p className="text-sm font-medium">لا توجد حركات استلام مسجلة حتى الآن.</p>
+                <p className="text-xs">شحنات البضاعة الواردة من الموردين ستظهر هنا بالتفصيل.</p>
               </div>
             ) : (
-              <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-[420px] overflow-y-auto pl-1">
                 {stockLogs.map(log => (
                   <div
                     key={log.id}
@@ -422,17 +422,17 @@ export const IncomingStockView: React.FC<IncomingStockViewProps> = ({
                     <div className="flex justify-between font-semibold text-slate-800 dark:text-slate-200">
                       <span className="truncate max-w-[200px]">{log.productName}</span>
                       <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-                        +{log.quantityAdded} units
+                        +{log.quantityAdded} وحدة
                       </span>
                     </div>
 
                     <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                      <span>Stock: {log.previousQuantity} &rarr; <strong>{log.newQuantity}</strong></span>
-                      <span>Supplier: {log.supplierName || 'General'}</span>
+                      <span>الرصيد: {log.previousQuantity} &larr; <strong>{log.newQuantity}</strong></span>
+                      <span>المورد: {log.supplierName || 'عام / بدون تحديد'}</span>
                     </div>
 
-                    <div className="text-[10px] text-slate-400 text-right pt-0.5">
-                      {new Date(log.dateTime).toLocaleString()}
+                    <div className="text-[10px] text-slate-400 text-left pt-0.5 font-mono">
+                      {new Date(log.dateTime).toLocaleString('ar-EG')}
                     </div>
                   </div>
                 ))}

@@ -1,5 +1,6 @@
 import React from 'react';
-import { TabType } from '../types';
+import { EmployeeRole, TabType } from '../types';
+import { canAccessTab } from '../utils/permissions';
 import { 
   LayoutDashboard, 
   ShoppingCart, 
@@ -31,73 +32,78 @@ interface SidebarProps {
   activeTab: TabType;
   onNavigate: (tab: TabType) => void;
   lowStockCount: number;
+  role: EmployeeRole;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onNavigate,
   lowStockCount,
+  role,
 }) => {
   const navGroups: {
     title: string;
     items: { id: TabType; label: string; icon: React.FC<{ className?: string }> }[];
   }[] = [
     {
-      title: 'Sales & POS Terminal',
+      title: 'المبيعات ونقطة البيع (الكاشير)',
       items: [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { id: 'pos', label: 'POS Billing', icon: ShoppingCart },
-        { id: 'cash_register', label: 'Cash Drawer Shifts', icon: DollarSign },
-        { id: 'sales_history', label: 'Sales History', icon: Receipt },
-        { id: 'returns', label: 'Returns & Refunds', icon: RotateCcw },
+        { id: 'dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
+        { id: 'pos', label: 'نقطة البيع (الكاشير)', icon: ShoppingCart },
+        { id: 'cash_register', label: 'شفتات ودرج النقدية', icon: DollarSign },
+        { id: 'sales_history', label: 'سجل الفواتير والمبيعات', icon: Receipt },
+        { id: 'returns', label: 'المرتجعات والاستبدال', icon: RotateCcw },
       ]
     },
     {
-      title: 'Inventory & Supply Chain',
+      title: 'المخزن وإدارة الأصناف',
       items: [
-        { id: 'products', label: 'Products Inventory', icon: Package },
-        { id: 'smart_reorder', label: 'Smart Reorder', icon: Zap },
-        { id: 'stock_in', label: 'Quick Restock', icon: PackagePlus },
-        { id: 'purchase_orders', label: 'Purchase Orders', icon: FileCheck },
-        { id: 'inventory_intel', label: 'Smart Analytics', icon: BarChart3 },
+        { id: 'products', label: 'المنتجات والمخزون', icon: Package },
+        { id: 'smart_reorder', label: 'إعادة الطلب الذكي', icon: Zap },
+        { id: 'stock_in', label: 'توريد واستلام بضاعة', icon: PackagePlus },
+        { id: 'purchase_orders', label: 'أوامر الشراء', icon: FileCheck },
+        { id: 'inventory_intel', label: 'تحليلات وحركة المخزون', icon: BarChart3 },
       ]
     },
     {
-      title: 'CRM & Accounting',
+      title: 'العملاء والحسابات المالية',
       items: [
-        { id: 'customers', label: 'Customers & Dues', icon: Users },
-        { id: 'suppliers', label: 'Suppliers Directory', icon: Truck },
-        { id: 'expenses', label: 'Shop Expenses', icon: TrendingDown },
-        { id: 'price_history', label: 'Price Changes Log', icon: History },
-        { id: 'reports', label: 'Reports & P&L', icon: BarChart3 },
+        { id: 'customers', label: 'العملاء وحساب الآجل', icon: Users },
+        { id: 'suppliers', label: 'دليل وحسابات الموردين', icon: Truck },
+        { id: 'expenses', label: 'مصروفات المحل والنثريات', icon: TrendingDown },
+        { id: 'price_history', label: 'سجل تغيير الأسعار', icon: History },
+        { id: 'reports', label: 'التقارير والأرباح والخسائر', icon: BarChart3 },
       ]
     },
     {
-      title: 'Enterprise & System',
+      title: 'إدارة النظام والتشغيل',
       items: [
-        { id: 'branches', label: 'Branch Locations', icon: Building2 },
-        { id: 'employees', label: 'Staff & Security PIN', icon: UserCheck },
-        { id: 'attendance', label: 'Daily Attendance', icon: Clock },
-        { id: 'barcodes', label: 'Label Designer', icon: Barcode },
-        { id: 'recycle_bin', label: 'Recycle Bin', icon: Trash2 },
-        { id: 'health_monitor', label: 'System Health', icon: Activity },
-        { id: 'audit_logs', label: 'Security Trail', icon: ShieldCheck },
-        { id: 'backup', label: 'Backup & Restore', icon: DatabaseBackup },
-        { id: 'settings', label: 'Shop Settings', icon: Settings },
+        { id: 'branches', label: 'الفروع ومواقع البيع', icon: Building2 },
+        { id: 'employees', label: 'الموظفون وصلاحيات الدخول', icon: UserCheck },
+        { id: 'attendance', label: 'الحضور والانصراف اليومي', icon: Clock },
+        { id: 'barcodes', label: 'طباعة وتصميم الباركود', icon: Barcode },
+        { id: 'recycle_bin', label: 'سلة المحذوفات', icon: Trash2 },
+        { id: 'health_monitor', label: 'حالة وأداء النظام', icon: Activity },
+        { id: 'audit_logs', label: 'سجل العمليات والأمان', icon: ShieldCheck },
+        { id: 'backup', label: 'النسخ الاحتياطي والاستعادة', icon: DatabaseBackup },
+        { id: 'settings', label: 'إعدادات المحل والفاتورة', icon: Settings },
       ]
     }
   ];
 
   return (
-    <aside className="no-print w-60 h-full bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 select-none overflow-y-auto">
+    <aside className="no-print w-64 h-full bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 flex flex-col justify-between shrink-0 select-none overflow-y-auto">
       <div className="p-3 space-y-4">
-        {navGroups.map((group, groupIdx) => (
+        {navGroups.map((group, groupIdx) => {
+          const visibleItems = group.items.filter(item => canAccessTab(role, item.id));
+          if (visibleItems.length === 0) return null;
+          return (
           <div key={groupIdx} className="space-y-1">
-            <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            <div className="px-3 py-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">
               {group.title}
             </div>
 
-            {group.items.map((item) => {
+            {visibleItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
 
@@ -105,14 +111,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   key={item.id}
                   onClick={() => onNavigate(item.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-medium text-xs transition duration-150 ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-medium text-xs transition duration-150 cursor-pointer ${
                     isActive
-                      ? 'bg-emerald-600 text-white shadow-xs font-semibold'
+                      ? 'bg-emerald-600 text-white shadow-xs font-bold'
                       : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
                     <span className="truncate">{item.label}</span>
                   </div>
 
@@ -128,20 +134,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
               );
             })}
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Footer Info Box */}
       <div className="p-3 border-t border-slate-200 dark:border-slate-700 m-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs space-y-1">
         <p className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
-          Offline Desktop POS
+          نظام كاشير محلي (أوفلاين)
         </p>
         <p className="text-[10px] text-slate-500 dark:text-slate-400">
-          Local SQLite Engine Active. Enterprise Ready.
+          قاعدة بيانات SQLite محلية نشطة وسريعة
         </p>
       </div>
     </aside>
   );
 };
-

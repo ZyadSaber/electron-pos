@@ -22,7 +22,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
 
   if (!isOpen || !sale) return null;
 
-  const currency = settings.currencySymbol || '₹';
+  const currency = settings.currencySymbol || 'ج.م';
 
   // Native window printing trigger with full debugging, ref check, and fallback
   const handlePrint = () => {
@@ -185,6 +185,8 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
       doc.setFont(font, 'normal');
       doc.text(new Date(sale.dateTime).toLocaleString(), 75, y, { align: 'right' });
       y += 4;
+      doc.text(`Cashier: ${sale.cashierName || 'N/A'}`, 5, y);
+      y += 4;
 
       if (sale.customerName) {
         doc.text(`Customer: ${sale.customerName} (${sale.customerPhone || 'N/A'})`, 5, y);
@@ -264,8 +266,9 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
       doc.setFont(font, 'normal');
       doc.text(`Invoice No: ${sale.invoiceNumber}`, 195, 22, { align: 'right' });
       doc.text(`Date: ${new Date(sale.dateTime).toLocaleString()}`, 195, 27, { align: 'right' });
+      doc.text(`Cashier: ${sale.cashierName || 'N/A'}`, 195, 32, { align: 'right' });
 
-      y += 5;
+      y += 9;
       doc.line(15, y, 195, y);
       y += 8;
 
@@ -358,10 +361,10 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
             </div>
             <div>
               <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-base">
-                Invoice {sale.invoiceNumber}
+                فاتورة رقم {sale.invoiceNumber}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Transaction Completed • {new Date(sale.dateTime).toLocaleString()}
+                تمت العملية بنجاح • {new Date(sale.dateTime).toLocaleString('ar-EG')}
               </p>
             </div>
           </div>
@@ -371,29 +374,29 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
             <div className="bg-slate-200 dark:bg-slate-700 p-0.5 rounded-xl flex text-xs font-medium">
               <button
                 onClick={() => setPrintFormat('thermal')}
-                className={`px-2.5 py-1 rounded-lg transition ${
+                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
                   printFormat === 'thermal'
-                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm'
+                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm font-bold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                 }`}
               >
-                Thermal (80mm)
+                طابعة كاشير حرارية (80mm)
               </button>
               <button
                 onClick={() => setPrintFormat('a4')}
-                className={`px-2.5 py-1 rounded-lg transition ${
+                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
                   printFormat === 'a4'
-                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm'
+                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm font-bold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                 }`}
               >
-                A4 Standard
+                فاتورة A4 عادية
               </button>
             </div>
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -404,8 +407,9 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
         <div className="p-6 overflow-y-auto max-h-[70vh] bg-slate-50 dark:bg-slate-900/50">
           <div
             ref={printableAreaRef}
-            className={`printable-area mx-auto bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 ${
-              printFormat === 'thermal' ? 'max-w-[340px] text-xs font-mono' : 'max-w-xl text-sm font-sans'
+            dir="rtl"
+            className={`printable-area mx-auto bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 text-right ${
+              printFormat === 'thermal' ? 'max-w-[340px] text-xs' : 'max-w-xl text-sm font-sans'
             }`}
           >
             {/* Header */}
@@ -417,44 +421,46 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
                 </h2>
               </div>
               <p className="text-slate-500 dark:text-slate-400 text-xs">{settings.address}</p>
-              {settings.phone && <p className="text-slate-500 dark:text-slate-400 text-xs">Phone: {settings.phone}</p>}
-              {settings.gstNumber && <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mt-0.5">GSTIN: {settings.gstNumber}</p>}
+              {settings.phone && <p className="text-slate-500 dark:text-slate-400 text-xs">هاتف: {settings.phone}</p>}
+              {settings.gstNumber && <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mt-0.5">الرقم الضريبي / السجل: {settings.gstNumber}</p>}
+              <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mt-1">فاتورة مبيعات ضريبية مبسطة</p>
             </div>
 
             {/* Bill Meta */}
             <div className="py-3 border-b border-dashed border-slate-300 dark:border-slate-600 flex justify-between items-center text-xs text-slate-600 dark:text-slate-400">
               <div>
-                <p><span className="font-semibold text-slate-800 dark:text-slate-200">Invoice:</span> {sale.invoiceNumber}</p>
+                <p><span className="font-semibold text-slate-800 dark:text-slate-200">رقم الفاتورة:</span> {sale.invoiceNumber}</p>
+                <p><span className="font-semibold text-slate-800 dark:text-slate-200">أنشأها:</span> {sale.cashierName || 'غير محدد'}</p>
                 {sale.customerName && (
-                  <p><span className="font-semibold text-slate-800 dark:text-slate-200">Customer:</span> {sale.customerName} ({sale.customerPhone || 'N/A'})</p>
+                  <p><span className="font-semibold text-slate-800 dark:text-slate-200">العميل:</span> {sale.customerName} {sale.customerPhone ? `(${sale.customerPhone})` : ''}</p>
                 )}
               </div>
-              <div className="text-right">
-                <p>{new Date(sale.dateTime).toLocaleDateString()}</p>
-                <p>{new Date(sale.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              <div className="text-left" dir="ltr">
+                <p>{new Date(sale.dateTime).toLocaleDateString('ar-EG')}</p>
+                <p>{new Date(sale.dateTime).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</p>
               </div>
             </div>
 
             {/* Itemized Table */}
             <div className="py-3 border-b border-dashed border-slate-300 dark:border-slate-600">
-              <table className="w-full text-left">
+              <table className="w-full text-right">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs">
-                    <th className="pb-1 font-semibold">Item</th>
-                    <th className="pb-1 text-center font-semibold">Qty</th>
-                    <th className="pb-1 text-right font-semibold">Price</th>
-                    <th className="pb-1 text-right font-semibold">Total</th>
+                    <th className="pb-1 font-semibold text-right">الصنف</th>
+                    <th className="pb-1 text-center font-semibold">العدد</th>
+                    <th className="pb-1 text-left font-semibold">السعر</th>
+                    <th className="pb-1 text-left font-semibold">الإجمالي</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
                   {sale.items.map((item, i) => (
                     <tr key={i} className="text-xs">
-                      <td className="py-1.5 pr-1 font-medium text-slate-800 dark:text-slate-200 max-w-[120px] truncate">
+                      <td className="py-1.5 pl-1 font-medium text-slate-800 dark:text-slate-200 max-w-[140px] truncate text-right">
                         {item.productName}
                       </td>
-                      <td className="py-1.5 text-center">{item.quantity}</td>
-                      <td className="py-1.5 text-right">{currency}{item.unitSellingPrice}</td>
-                      <td className="py-1.5 text-right font-semibold">{currency}{item.totalPrice}</td>
+                      <td className="py-1.5 text-center font-bold">{item.quantity}</td>
+                      <td className="py-1.5 text-left">{item.unitSellingPrice} {currency}</td>
+                      <td className="py-1.5 text-left font-bold">{item.totalPrice} {currency}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -464,36 +470,36 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
             {/* Calculation Totals */}
             <div className="py-3 space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
               <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>{currency}{sale.subtotal}</span>
+                <span>المجموع الفرعي</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">{sale.subtotal} {currency}</span>
               </div>
               {sale.discountAmount > 0 && (
                 <div className="flex justify-between text-emerald-600 font-medium">
-                  <span>Discount</span>
-                  <span>-{currency}{sale.discountAmount}</span>
+                  <span>الخصم</span>
+                  <span>-{sale.discountAmount} {currency}</span>
                 </div>
               )}
               {sale.taxAmount > 0 && (
                 <div className="flex justify-between">
-                  <span>GST / Tax ({sale.taxPercent}%)</span>
-                  <span>{currency}{sale.taxAmount.toFixed(2)}</span>
+                  <span>ضريبة القيمة المضافة ({sale.taxPercent}%)</span>
+                  <span>{sale.taxAmount.toFixed(2)} {currency}</span>
                 </div>
               )}
-              <div className="flex justify-between text-sm font-bold text-slate-900 dark:text-slate-100 pt-1 border-t border-slate-200 dark:border-slate-700">
-                <span>Total Amount</span>
-                <span>{currency}{sale.totalAmount}</span>
+              <div className="flex justify-between text-sm font-black text-slate-900 dark:text-slate-100 pt-1 border-t border-slate-200 dark:border-slate-700">
+                <span>الإجمالي الصافي</span>
+                <span className="text-emerald-700 dark:text-emerald-400 text-base">{sale.totalAmount} {currency}</span>
               </div>
             </div>
 
             {/* Payment info */}
             <div className="mt-2 p-2 rounded-lg bg-slate-100 dark:bg-slate-700/50 text-xs flex justify-between items-center text-slate-700 dark:text-slate-300">
-              <span>Mode: <strong>{sale.paymentMode}</strong></span>
+              <span>طريقة السداد: <strong>{sale.paymentMode === 'Cash' ? 'كاش (نقدي)' : sale.paymentMode === 'UPI' ? 'إنستاباي / محفظة' : sale.paymentMode === 'Card' ? 'بطاقة بنكية' : 'آجل (شكك)'}</strong></span>
               {sale.paymentMode === 'Cash' && sale.receivedAmount > 0 && (
-                <span>Recv: {currency}{sale.receivedAmount} | Change: <strong>{currency}{sale.changeAmount}</strong></span>
+                <span>المدفوع: {sale.receivedAmount} {currency} | الباقي: <strong>{sale.changeAmount} {currency}</strong></span>
               )}
               {sale.paymentMode === 'UPI' && (
                 <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[11px]">
-                  ✓ PAID via Dynamic UPI
+                  ✓ تم الدفع إلكترونياً
                 </span>
               )}
             </div>
@@ -501,20 +507,20 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
             {sale.paymentMode === 'UPI' && (
               <div className="mt-1.5 p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[10px] space-y-0.5 text-emerald-900 dark:text-emerald-200">
                 <div className="flex justify-between font-semibold">
-                  <span>Merchant: {settings.merchantName || settings.shopName}</span>
-                  <span>Status: PAID</span>
+                  <span>المستلم: {settings.merchantName || settings.shopName}</span>
+                  <span>الحالة: مدفوع</span>
                 </div>
-                {settings.upiId && <div className="font-mono">VPA: {settings.upiId}</div>}
+                {settings.upiId && <div className="font-mono">معرف التحويل: {settings.upiId}</div>}
                 <div className="italic text-[9px] text-emerald-700 dark:text-emerald-400">
-                  {settings.upiReceiptFooter || 'QR Payment Completed via Dynamic UPI'}
+                  {settings.upiReceiptFooter || 'تم الدفع الإلكتروني بنجاح'}
                 </div>
               </div>
             )}
 
             {/* Footer */}
-            <div className="text-center mt-4 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-              <p>*** Thank You For Shopping With Us! ***</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">Powered by Offline POS System</p>
+            <div className="text-center mt-4 text-[11px] text-slate-500 dark:text-slate-400 font-medium space-y-1">
+              <p>*** شكراً لتسوقكم معنا ونسعد بزيارتكم دائماً ***</p>
+              <p className="text-[10px] text-slate-400">البضاعة المباعة ترد وتستبدل خلال 14 يوماً بموجب الفاتورة وفقاً لقانون حماية المستهلك</p>
             </div>
           </div>
         </div>
@@ -522,24 +528,24 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
         {/* Modal Action Buttons */}
         <div className="no-print p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-3">
           <div className="text-xs text-slate-500 dark:text-slate-400">
-            Invoice automatically stored in local SQLite database.
+            تم حفظ الفاتورة تلقائياً في قاعدة البيانات المحلية.
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={handleDownloadPDF}
-              className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 rounded-xl font-medium text-sm flex items-center gap-1.5 transition"
+              className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 rounded-xl font-bold text-xs flex items-center gap-1.5 transition cursor-pointer"
             >
               <Download className="w-4 h-4" />
-              Save PDF
+              حفظ كملف PDF
             </button>
 
             <button
               onClick={handlePrint}
-              className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium text-sm flex items-center gap-1.5 shadow-md hover:shadow-lg transition"
+              className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-md hover:shadow-lg transition cursor-pointer"
             >
               <Printer className="w-4 h-4" />
-              Print Receipt
+              طباعة الإيصال
             </button>
           </div>
         </div>
@@ -552,20 +558,20 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-md w-full border border-rose-300 dark:border-rose-800 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-150">
             <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
               <AlertCircle className="w-7 h-7 shrink-0" />
-              <h4 className="text-base font-bold">Print Operation Notice</h4>
+              <h4 className="text-base font-bold">تنبيه أثناء عملية الطباعة</h4>
             </div>
             <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
               {printError}
             </p>
             <div className="p-3 bg-slate-100 dark:bg-slate-900/80 rounded-xl text-[11px] text-slate-500 font-mono leading-normal">
-              Tip: You can use the "Save PDF" button to save or print the receipt file directly.
+              تلميح: يمكنك استخدام زر "حفظ كملف PDF" لحفظ الفاتورة أو طباعتها مباشرة.
             </div>
             <div className="flex justify-end pt-1">
               <button
                 onClick={() => setPrintError(null)}
-                className="px-4 py-2 bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900 rounded-xl text-xs font-bold hover:bg-slate-700 transition"
+                className="px-4 py-2 bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900 rounded-xl text-xs font-bold hover:bg-slate-700 transition cursor-pointer"
               >
-                Dismiss
+                إغلاق
               </button>
             </div>
           </div>

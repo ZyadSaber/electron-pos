@@ -35,16 +35,23 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({ settings }) => {
     refreshAttendance();
   };
 
+  const statusLabels: Record<string, string> = {
+    Present: 'حاضر (في الموعد)',
+    Late: 'متأخر',
+    'Half Day': 'نصف يوم',
+    Absent: 'غائب',
+  };
+
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div>
         <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
           <Clock className="w-6 h-6 text-emerald-600" />
-          Employee Daily Attendance & Duty Roster
+          دفتر وسجل حضور وانصراف العاملين والورديات
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          Track employee check-in, check-out times, late arrivals, and working hours. Date: <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{todayStr}</span>
+          تسجيل مواعيد الحضور والانصراف، حساب التأخيرات، ومتابعة ساعات العمل الفعلية. تاريخ اليوم: <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{todayStr}</span>
         </p>
       </div>
 
@@ -54,7 +61,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({ settings }) => {
           const todayRecord = attendance.find(a => a.employeeId === emp.id && a.date === todayStr);
 
           return (
-            <div key={emp.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 space-y-4 shadow-xs">
+            <div key={emp.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 space-y-4 shadow-xs text-right">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">{emp.name}</h3>
@@ -65,22 +72,22 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({ settings }) => {
                   <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
                     todayRecord.status === 'Late' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                   }`}>
-                    {todayRecord.status}
+                    {statusLabels[todayRecord.status] || todayRecord.status}
                   </span>
                 ) : (
                   <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 text-slate-500 rounded-full text-[10px] font-bold">
-                    Not Checked In
+                    لم يسجل حضور
                   </span>
                 )}
               </div>
 
               <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl text-xs space-y-1 font-mono text-slate-600 dark:text-slate-300">
                 <div className="flex justify-between">
-                  <span>Check In Time:</span>
+                  <span>وقت الحضور:</span>
                   <span className="font-bold text-slate-800 dark:text-slate-100">{todayRecord?.checkInTime || '--:--'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Check Out Time:</span>
+                  <span>وقت الانصراف:</span>
                   <span className="font-bold text-slate-800 dark:text-slate-100">{todayRecord?.checkOutTime || '--:--'}</span>
                 </div>
               </div>
@@ -89,22 +96,22 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({ settings }) => {
                 {!todayRecord ? (
                   <button
                     onClick={() => handleCheckIn(emp.id)}
-                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-xs"
+                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-xs cursor-pointer"
                   >
                     <LogIn className="w-4 h-4" />
-                    <span>Check In Staff</span>
+                    <span>تسجيل حضور</span>
                   </button>
                 ) : !todayRecord.checkOutTime ? (
                   <button
                     onClick={() => handleCheckOut(emp.id)}
-                    className="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-xs"
+                    className="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-xs cursor-pointer"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span>Check Out Staff</span>
+                    <span>تسجيل انصراف</span>
                   </button>
                 ) : (
                   <div className="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-500 text-xs font-bold text-center rounded-xl">
-                    Shift Completed Today
+                    اكتملت الوردية اليوم
                   </div>
                 )}
               </div>
@@ -116,25 +123,25 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({ settings }) => {
       {/* Attendance History Log Table */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-xs">
         <div className="p-4 border-b border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-slate-100 text-sm">
-          Recent Attendance Records
+          سجل الحضور الأخير
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-right border-collapse text-xs">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700 font-semibold uppercase tracking-wider text-[10px]">
-                <th className="py-3 px-4">Date</th>
-                <th className="py-3 px-4">Employee</th>
-                <th className="py-3 px-4">Check In</th>
-                <th className="py-3 px-4">Check Out</th>
-                <th className="py-3 px-4 text-center">Shift Status</th>
+                <th className="py-3 px-4 text-right">التاريخ</th>
+                <th className="py-3 px-4 text-right">الموظف</th>
+                <th className="py-3 px-4 text-right">ساعة الحضور</th>
+                <th className="py-3 px-4 text-right">ساعة الانصراف</th>
+                <th className="py-3 px-4 text-center">حالة الوردية</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-slate-700 dark:text-slate-300">
               {attendance.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-8 text-center text-slate-400">
-                    No attendance logs generated yet today.
+                    لا توجد سجلات حضور مسجلة اليوم حتى الآن.
                   </td>
                 </tr>
               ) : (
@@ -143,10 +150,10 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({ settings }) => {
                     <td className="py-3 px-4 font-mono">{att.date}</td>
                     <td className="py-3 px-4 font-bold">{att.employeeName}</td>
                     <td className="py-3 px-4 font-mono text-emerald-600">{att.checkInTime}</td>
-                    <td className="py-3 px-4 font-mono text-amber-600">{att.checkOutTime || 'Active Shift'}</td>
+                    <td className="py-3 px-4 font-mono text-amber-600">{att.checkOutTime || 'وردية حالية مستمرة'}</td>
                     <td className="py-3 px-4 text-center">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                        {att.status}
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                        {statusLabels[att.status] || att.status}
                       </span>
                     </td>
                   </tr>

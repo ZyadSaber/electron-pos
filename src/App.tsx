@@ -3,16 +3,18 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { 
-  TabType, 
-  ShopSettings, 
-  Product, 
-  Sale, 
-  IncomingStockLog, 
+import {
+  TabType,
+  ShopSettings,
+  Product,
+  Sale,
+  IncomingStockLog,
   CartItem,
-  DashboardMetrics 
+  DashboardMetrics,
+  Employee
 } from './types';
 import { sqliteDB } from './db/sqliteStorage';
+import { canAccessTab, canManageCashShifts, getDefaultTab } from './utils/permissions';
 
 // Components
 import { NavbarHeader } from './components/NavbarHeader';
@@ -41,6 +43,7 @@ import { ReturnsExchangesView } from './components/ReturnsExchangesView';
 import { AuditLogsView } from './components/AuditLogsView';
 import { GlobalSearchModal } from './components/GlobalSearchModal';
 import { PinLockModal } from './components/PinLockModal';
+import { LoginView } from './components/LoginView';
 import { LabelDesignerModal } from './components/LabelDesignerModal';
 
 // Modules 28-50 Advanced Enterprise Views
@@ -59,8 +62,9 @@ export default function App() {
   const [products, setProducts] = useState<Product[]>(() => sqliteDB.getProducts());
   const [sales, setSales] = useState<Sale[]>(() => sqliteDB.getSales());
   const [stockLogs, setStockLogs] = useState<IncomingStockLog[]>(() => sqliteDB.getStockLogs());
-  
+
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [currentUser, setCurrentUser] = useState<Employee | null>(() => sqliteDB.getCurrentUser());
 
   // Modals
   const [selectedInvoiceForModal, setSelectedInvoiceForModal] = useState<Sale | null>(null);
@@ -75,6 +79,7 @@ export default function App() {
   const [isLabelDesignerOpen, setIsLabelDesignerOpen] = useState(false);
   const [settingsResetModal, setSettingsResetModal] = useState<'clear' | 'sample' | null>(null);
   const [settingsToast, setSettingsToast] = useState<string | null>(null);
+  const [accessMessage, setAccessMessage] = useState<string | null>(null);
 
   // Keyboard Shortcuts (Ctrl+K for Search, F2 for POS)
   useEffect(() => {
@@ -85,12 +90,18 @@ export default function App() {
       }
       if (e.key === 'F2') {
         e.preventDefault();
-        setActiveTab('pos');
+        if (currentUser && canAccessTab(currentUser.role, 'pos') && sqliteDB.getCurrentCashShift(currentUser.id)) {
+          setActiveTab('pos');
+          setAccessMessage(null);
+        } else if (currentUser && canAccessTab(currentUser.role, 'cash_register')) {
+          setActiveTab('cash_register');
+          setAccessMessage('يجب فتح شفت للمستخدم الحالي قبل بدء البيع.');
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [currentUser]);
 
   // Enforce light theme always, independent of OS settings
   useEffect(() => {
@@ -111,6 +122,43 @@ export default function App() {
     setSettings(updated);
   };
 
+  const handleLogin = (employee: Employee) => {
+    sqliteDB.setCurrentUser(employee);
+    setCurrentUser(employee);
+    setActiveTab(getDefaultTab(employee.role));
+    setAccessMessage(null);
+  };
+
+  const handleLogout = () => {
+    if (sqliteDB.getCurrentCashShift(currentUser?.id)) {
+      setActiveTab('cash_register');
+      setAccessMessage('أغلق شفتك الحالي قبل تسجيل الخروج.');
+      return;
+    }
+    sqliteDB.setCurrentUser(null);
+    setCurrentUser(null);
+  };
+
+  const handleNavigate = (tab: TabType) => {
+    if (!currentUser || !canAccessTab(currentUser.role, tab)) {
+      setAccessMessage('لا تملك صلاحية الوصول إلى هذه الصفحة.');
+      return;
+    }
+    if (tab === 'pos' && !sqliteDB.getCurrentCashShift(currentUser.id)) {
+      setActiveTab('cash_register');
+      setAccessMessage('يجب فتح شفت للمستخدم الحالي قبل بدء البيع.');
+      return;
+    }
+    setAccessMessage(null);
+    setActiveTab(tab);
+  };
+
+  useEffect(() => {
+    if (currentUser && !canAccessTab(currentUser.role, activeTab)) {
+      setActiveTab(getDefaultTab(currentUser.role));
+    }
+  }, [currentUser, activeTab]);
+
   const handleSaveProduct = (productData: Partial<Product> & { name: string; barcode: string; purchasePrice: number; sellingPrice: number; quantity: number }) => {
     sqliteDB.saveProduct(productData);
     refreshAllState();
@@ -122,10 +170,10 @@ export default function App() {
   };
 
   const handleAddExistingStock = (
-    productId: string, 
-    qtyToAdd: number, 
-    newPurchasePrice?: number, 
-    newSellingPrice?: number, 
+    productId: string,
+    qtyToAdd: number,
+    newPurchasePrice?: number,
+    newSellingPrice?: number,
     supplierName?: string
   ) => {
     sqliteDB.addStock(productId, qtyToAdd, newPurchasePrice, newSellingPrice, supplierName);
@@ -196,11 +244,15 @@ export default function App() {
 
   const handleResetToSampleData = () => {
     sqliteDB.resetToSampleData();
+    sqliteDB.setCurrentUser(null);
+    setCurrentUser(null);
     refreshAllState();
   };
 
   const handleClearAllDataForFreshStart = (customSettings?: Partial<ShopSettings>) => {
     sqliteDB.clearAllDataForFreshStart(customSettings);
+    sqliteDB.setCurrentUser(null);
+    setCurrentUser(null);
     refreshAllState();
   };
 
@@ -211,44 +263,69 @@ export default function App() {
 
   const handleOpenBarcodeGeneratorForProduct = (product: Product) => {
     setProductForBarcodeLabel(product);
-    setActiveTab('barcodes');
+    handleNavigate('barcodes');
   };
 
   const metrics: DashboardMetrics = sqliteDB.getMetrics();
   const lowStockProducts = products.filter(p => p.quantity <= (p.minStockLevel || settings.lowStockThreshold));
 
+  if (!currentUser) {
+    if (!settings.isSetupCompleted) {
+      return (
+        <FirstTimeSetupModal
+          isOpen
+          onSave={handleUpdateSettings}
+          onClearAllData={handleClearAllDataForFreshStart}
+          initialSettings={settings}
+        />
+      );
+    }
+    return <LoginView settings={settings} onLogin={handleLogin} />;
+  }
+
   return (
     <div className="h-screen w-screen overflow-hidden bg-slate-100 text-slate-800 flex flex-col font-sans select-none antialiased">
-      
+
       {/* Top Application Navbar Titlebar */}
       <NavbarHeader
         settings={settings}
-        onUpdateSettings={handleUpdateSettings}
-        onNavigate={setActiveTab}
+        onNavigate={handleNavigate}
         activeTab={activeTab}
         onOpenSearch={() => setIsSearchOpen(true)}
         onLockTerminal={() => setIsTerminalLocked(true)}
+        onLogout={handleLogout}
+        currentUser={currentUser}
+        canOpenPOS={canAccessTab(currentUser.role, 'pos')}
       />
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* Left Sidebar */}
         <Sidebar
           activeTab={activeTab}
-          onNavigate={setActiveTab}
+          onNavigate={handleNavigate}
           lowStockCount={metrics.lowStockCount}
+          role={currentUser.role}
         />
 
         {/* Main Content Workspace View */}
         <main className="flex-1 min-h-0 overflow-y-auto">
+          {canAccessTab(currentUser.role, activeTab) ? (
+            <>
+              {accessMessage && (
+                <div role="alert" className="mx-6 mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-800">
+                  {accessMessage}
+                </div>
+              )}
           {activeTab === 'dashboard' && (
             <DashboardView
               metrics={metrics}
               recentSales={sales}
               lowStockProducts={lowStockProducts}
               settings={settings}
-              onNavigate={setActiveTab}
+              onNavigate={handleNavigate}
               onViewInvoice={handleViewInvoice}
-              onQuickAddProduct={() => setActiveTab('products')}
+              onQuickAddProduct={() => handleNavigate('products')}
+              role={currentUser.role}
             />
           )}
 
@@ -267,13 +344,13 @@ export default function App() {
             <CustomerManagementView
               settings={settings}
               onSelectCustomerForPOS={(cust) => {
-                setActiveTab('pos');
+                handleNavigate('pos');
               }}
             />
           )}
 
           {activeTab === 'cash_register' && (
-            <CashRegisterView />
+            <CashRegisterView currentUser={currentUser} />
           )}
 
           {activeTab === 'smart_reorder' && (
@@ -317,6 +394,7 @@ export default function App() {
           {activeTab === 'employees' && (
             <EmployeeManagementView
               settings={settings}
+              onCurrentUserChange={handleLogin}
             />
           )}
 
@@ -375,6 +453,7 @@ export default function App() {
               settings={settings}
               onViewInvoice={handleViewInvoice}
               onCancelSale={handleCancelSale}
+              canCancelSales={canManageCashShifts(currentUser.role)}
             />
           )}
 
@@ -407,12 +486,12 @@ export default function App() {
             <div className="p-6 max-w-3xl mx-auto space-y-6">
               <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-4">
                 <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 border-b border-slate-200 dark:border-slate-700 pb-3">
-                  Shop Profile & Invoice Settings
+                  بيانات المحل وإعدادات الفاتورة
                 </h2>
 
                 <div className="grid grid-cols-2 gap-4 text-xs">
                   <div>
-                    <label className="block font-semibold mb-1">Shop Name</label>
+                    <label className="block font-semibold mb-1">اسم المحل / الماركت</label>
                     <input
                       type="text"
                       value={settings.shopName}
@@ -422,7 +501,7 @@ export default function App() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold mb-1">Owner Name</label>
+                    <label className="block font-semibold mb-1">اسم المالك / المدير</label>
                     <input
                       type="text"
                       value={settings.ownerName}
@@ -432,7 +511,7 @@ export default function App() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold mb-1">Phone Number</label>
+                    <label className="block font-semibold mb-1">رقم الهاتف / الموبايل</label>
                     <input
                       type="text"
                       value={settings.phone}
@@ -442,7 +521,7 @@ export default function App() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold mb-1">GSTIN Number</label>
+                    <label className="block font-semibold mb-1">الرقم الضريبي / السجل التجاري</label>
                     <input
                       type="text"
                       value={settings.gstNumber || ''}
@@ -452,7 +531,7 @@ export default function App() {
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block font-semibold mb-1">Shop Address</label>
+                    <label className="block font-semibold mb-1">عنوان المحل</label>
                     <input
                       type="text"
                       value={settings.address}
@@ -462,7 +541,7 @@ export default function App() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold mb-1">Low Stock Limit Warning</label>
+                    <label className="block font-semibold mb-1">تنبيه الحد الأدنى للنواقص بالمخزن</label>
                     <input
                       type="number"
                       value={settings.lowStockThreshold}
@@ -472,7 +551,7 @@ export default function App() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold mb-1">Default Tax / GST (%)</label>
+                    <label className="block font-semibold mb-1">نسبة ضريبة القيمة المضافة الافتراضية (%)</label>
                     <input
                       type="number"
                       value={settings.defaultTaxPercent}
@@ -484,11 +563,11 @@ export default function App() {
 
                 <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 text-xs text-emerald-800 dark:text-emerald-200 flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <span>Settings automatically saved into local SQLite database.</span>
+                  <span>يتم حفظ جميع الإعدادات تلقائياً في قاعدة بيانات SQLite المحلية على جهازك.</span>
                 </div>
               </div>
 
-              {/* Dynamic UPI Payment Settings Card */}
+              {/* Dynamic Electronic / InstaPay Payment Settings Card */}
               <UpiSettingsSection
                 settings={settings}
                 onUpdateSettings={handleUpdateSettings}
@@ -497,10 +576,10 @@ export default function App() {
               {/* Fresh Start Store Deployment Card */}
               <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-rose-200 dark:border-rose-900/60 shadow-xs space-y-3">
                 <h3 className="text-sm font-bold text-rose-700 dark:text-rose-400 flex items-center gap-2">
-                  Store Data Reset & Fresh Start
+                  تهيئة النظام والبدء من جديد
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  If you are deploying this software for a brand new shop owner, click below to wipe all demo sample data (products, sales history, demo customers) so they can start entering real inventory from scratch.
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  إذا كنت تقوم بتشغيل هذا البرنامج لمتجر جديد، يمكنك مسح جميع البيانات التجريبية (المنتجات، سجل المبيعات، العملاء، المصروفات) لتبدأ بإدخال بضاعة محلك ومخزنك الحقيقية.
                 </p>
 
                 {settingsToast && (
@@ -515,81 +594,98 @@ export default function App() {
                     onClick={() => setSettingsResetModal('clear')}
                     className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
                   >
-                    Wipe Demo Data & Start Fresh
+                    مسح البيانات التجريبية والبدء بمتجر فارغ
                   </button>
                   <button
                     type="button"
                     onClick={() => setSettingsResetModal('sample')}
                     className="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition cursor-pointer"
                   >
-                    Load Demo Data
+                    إعادة تحميل الأصناف والبيانات التجريبية
                   </button>
                 </div>
               </div>
             </div>
           )}
-
-          {/* Settings Reset Confirmation Modal */}
-          {settingsResetModal && (
-            <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 border border-slate-200 dark:border-slate-700 shadow-2xl animate-fadeIn">
-                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                  {settingsResetModal === 'clear' ? 'Wipe All Demo Data & Start Fresh?' : 'Reload Sample Grocery Dataset?'}
-                </h3>
-
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  {settingsResetModal === 'clear'
-                    ? 'Are you sure you want to wipe all demo sample data? All sample products, sales history, customers, and expenses will be cleared so you can enter your real store data from scratch.'
-                    : 'Are you sure you want to reload the initial sample grocery dataset (Atta, Sunflower Oil, Tata Salt, etc.)?'}
-                </p>
-
-                <div className="flex justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setSettingsResetModal(null)}
-                    className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (settingsResetModal === 'clear') {
-                        handleClearAllDataForFreshStart();
-                        setSettingsToast('All demo data wiped! You now have a 100% clean slate to enter real store data.');
-                      } else {
-                        handleResetToSampleData();
-                        setSettingsToast('Sample grocery dataset loaded into local database.');
-                      }
-                      setSettingsResetModal(null);
-                      setTimeout(() => setSettingsToast(null), 4000);
-                    }}
-                    className={`px-4 py-2 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer ${
-                      settingsResetModal === 'clear' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-slate-800 hover:bg-slate-900'
-                    }`}
-                  >
-                    {settingsResetModal === 'clear' ? 'Yes, Wipe & Start Fresh' : 'Yes, Load Demo Data'}
-                  </button>
-                </div>
-              </div>
+            </>
+          ) : (
+            <div role="alert" className="m-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-800">
+              لا تملك صلاحية الوصول إلى هذه الصفحة.
             </div>
           )}
         </main>
       </div>
 
+      {/* Settings Reset Confirmation Modal */}
+      {settingsResetModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 border border-slate-200 dark:border-slate-700 shadow-2xl animate-fadeIn">
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              {settingsResetModal === 'clear' ? 'مسح جميع البيانات التجريبية والبدء من جديد؟' : 'إعادة تحميل المنتجات التجريبية؟'}
+            </h3>
+
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              {settingsResetModal === 'clear'
+                ? 'هل أنت متأكد من رغبتك في مسح كافة البيانات التجريبية؟ سيتم حذف جميع الأصناف التجريبية، وفواتير المبيعات، والعملاء، والمصروفات لتتمكن من البدء بإدخال بضاعة متجرك الحقيقية من الصفر.'
+                : 'هل أنت متأكد من رغبتك في إعادة تحميل البضاعة والبيانات التجريبية الافتراضية للسوبر ماركت (زيت، سكر، أرز، شاي العروسة، إلخ)؟'}
+            </p>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setSettingsResetModal(null)}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (settingsResetModal === 'clear') {
+                    handleClearAllDataForFreshStart();
+                    setSettingsToast('تم مسح البيانات التجريبية بنجاح! يمكنك الآن بدء إدخال بضاعة محلك الفعلية.');
+                  } else {
+                    handleResetToSampleData();
+                    setSettingsToast('تمت استعادة الأصناف والبيانات التجريبية بنجاح.');
+                  }
+                  setSettingsResetModal(null);
+                  setTimeout(() => setSettingsToast(null), 4000);
+                }}
+                className={`px-4 py-2 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer ${settingsResetModal === 'clear' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-slate-800 hover:bg-slate-900'
+                  }`}
+              >
+                {settingsResetModal === 'clear' ? 'نعم، مسح والبدء بنظام فارغ' : 'نعم، استرجاع البيانات التجريبية'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Label Designer Studio Modal */}
+      {isLabelDesignerOpen && (
+        <LabelDesignerModal
+          settings={settings}
+          onClose={() => setIsLabelDesignerOpen(false)}
+        />
+      )}
+
       {/* Global Search Modal */}
       {isSearchOpen && (
         <GlobalSearchModal
           settings={settings}
+          role={currentUser.role}
           onClose={() => setIsSearchOpen(false)}
-          onNavigate={(tab) => setActiveTab(tab)}
+          onNavigate={handleNavigate}
         />
       )}
 
       {/* Terminal PIN Lock Screen */}
       {isTerminalLocked && (
         <PinLockModal
-          onUnlock={() => setIsTerminalLocked(false)}
+          onUnlock={(employee) => {
+            handleLogin(employee);
+            setIsTerminalLocked(false);
+          }}
         />
       )}
 

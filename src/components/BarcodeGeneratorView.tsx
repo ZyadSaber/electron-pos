@@ -47,7 +47,7 @@ const StickerItem: React.FC<{
       </div>
 
       <p className="font-black text-xs font-mono text-slate-900">
-        PRICE: {currency}{price}
+        السعر: {price} {currency}
       </p>
     </div>
   );
@@ -68,13 +68,13 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
   const [copies, setCopies] = useState<number>(12);
 
   const barcodeSvgRef = useRef<SVGSVGElement | null>(null);
-  const currency = settings.currencySymbol || '₹';
+  const currency = settings.currencySymbol || 'ج.م';
 
   const activeProduct = products.find(p => p.id === selectedProductId);
 
-  const displayBarcode = activeProduct ? activeProduct.barcode : (customBarcode || '8901234567890');
-  const displayName = activeProduct ? activeProduct.name : (customName || 'Sample Grocery Product');
-  const displayPrice = activeProduct ? activeProduct.sellingPrice : (parseFloat(customPrice) || 100);
+  const displayBarcode = activeProduct ? activeProduct.barcode : (customBarcode || '6221234567890');
+  const displayName = activeProduct ? activeProduct.name : (customName || 'منتج تجريبي');
+  const displayPrice = activeProduct ? activeProduct.sellingPrice : (parseFloat(customPrice) || 25);
 
   useEffect(() => {
     if (selectedProductForLabel) {
@@ -122,23 +122,24 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
             font-family: Arial, sans-serif;
             background: #fff;
             color: #000;
+            direction: rtl;
             page-break-inside: avoid;
           ">
-            <div style="font-size: 10px; font-weight: bold; text-transform: uppercase;">${settings.shopName || 'MY STORE'}</div>
+            <div style="font-size: 10px; font-weight: bold; text-transform: uppercase;">${settings.shopName || 'سوبر ماركت'}</div>
             <div style="font-size: 11px; font-weight: 600; margin: 2px 0;">${displayName}</div>
             <svg class="barcode-svg" data-code="${displayBarcode}"></svg>
-            <div style="font-size: 11px; font-weight: bold; font-family: monospace;">OUR PRICE: ${currency}${displayPrice}</div>
+            <div style="font-size: 11px; font-weight: bold; font-family: monospace;">السعر: ${displayPrice} ${currency}</div>
           </div>
         `).join('');
 
         printWindow.document.write(`
           <!DOCTYPE html>
-          <html>
+          <html dir="rtl">
             <head>
-              <title>Barcode Sticker Sheet Print</title>
+              <title>طباعة ملصقات الباركود</title>
               <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
               <style>
-                body { margin: 10mm; padding: 0; background: #fff; }
+                body { margin: 10mm; padding: 0; background: #fff; direction: rtl; }
                 .grid {
                   display: grid;
                   grid-template-columns: repeat(3, 1fr);
@@ -188,10 +189,10 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <BarcodeIcon className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-            Barcode Sticker Label Generator
+            طباعة ملصقات واستيكرات الباركود والأسعار
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Generate and print barcode stickers for shop items without pre-printed barcode labels.
+            توليد وطباعة أوراق الباركود للأصناف والسلع بدون باركود مسبق أو للأرفف.
           </p>
         </div>
 
@@ -200,31 +201,31 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
           className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md text-xs flex items-center gap-2 transition cursor-pointer"
         >
           <Printer className="w-4 h-4" />
-          Print Sticker Sheet ({copies} Labels)
+          <span>طباعة ورقة الاستيكرات ({copies} ملصق)</span>
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left Controls (5 Cols) */}
-        <div className="lg:col-span-5 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-4">
+        <div className="lg:col-span-5 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-4 text-right">
           <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700 pb-2">
-            Label Configuration
+            إعدادات الملصق
           </h3>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Select Product from Local Inventory
+              اختر المنتج من المخزن
             </label>
             <select
               value={selectedProductId}
               onChange={e => setSelectedProductId(e.target.value)}
               className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-medium outline-none"
             >
-              <option value="">-- Custom Barcode Entry --</option>
+              <option value="">-- إدخال باركود يدوي مخصص --</option>
               {products.map(p => (
                 <option key={p.id} value={p.id}>
-                  {p.name} ({currency}{p.sellingPrice} - Barcode: {p.barcode})
+                  {p.name} ({p.sellingPrice} {currency} - باركود: {p.barcode})
                 </option>
               ))}
             </select>
@@ -234,11 +235,11 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
             <div className="space-y-3 pt-2">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Product Label Name
+                  اسم المنتج على الملصق
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Fresh Sugar 1kg"
+                  placeholder="مثال: سكر ناعم 1 كجم"
                   value={customName}
                   onChange={e => setCustomName(e.target.value)}
                   className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs"
@@ -248,11 +249,11 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Barcode Number
+                    رقم الباركود
                   </label>
                   <input
                     type="text"
-                    placeholder="8901234567890"
+                    placeholder="6221234567890"
                     value={customBarcode}
                     onChange={e => setCustomBarcode(e.target.value)}
                     className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-mono"
@@ -261,11 +262,11 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Price ({currency})
+                    السعر ({currency})
                   </label>
                   <input
                     type="number"
-                    placeholder="50"
+                    placeholder="25"
                     value={customPrice}
                     onChange={e => setCustomPrice(e.target.value)}
                     className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-mono"
@@ -277,29 +278,29 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Number of Label Copies to Print
+              عدد الملصقات في الورقة الواحدة
             </label>
             <select
               value={copies}
               onChange={e => setCopies(parseInt(e.target.value))}
               className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-medium"
             >
-              <option value={6}>6 Stickers per Sheet</option>
-              <option value={12}>12 Stickers per Sheet</option>
-              <option value={24}>24 Stickers per Sheet</option>
-              <option value={40}>40 Stickers per Sheet</option>
+              <option value={6}>6 ملصقات بالورقة</option>
+              <option value={12}>12 ملصق بالورقة</option>
+              <option value={24}>24 ملصق بالورقة</option>
+              <option value={40}>40 ملصق بالورقة</option>
             </select>
           </div>
 
           <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 text-center space-y-2">
-            <span className="text-xs text-slate-400 font-semibold uppercase">Live Single Preview</span>
+            <span className="text-xs text-slate-400 font-semibold uppercase">معاينة مباشرة لشكل الاستيكر</span>
             <div className="p-3 bg-white text-black rounded-lg border border-slate-300 max-w-[220px] mx-auto shadow-xs text-center font-sans">
               <p className="font-bold text-xs truncate">{settings.shopName}</p>
               <p className="text-[11px] font-semibold truncate leading-tight mt-0.5">{displayName}</p>
               <div className="my-1 flex justify-center">
                 <svg ref={barcodeSvgRef} />
               </div>
-              <p className="font-bold text-sm font-mono">OUR PRICE: {currency}{displayPrice}</p>
+              <p className="font-bold text-sm font-mono">السعر: {displayPrice} {currency}</p>
             </div>
           </div>
         </div>
@@ -308,9 +309,9 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
         <div className="lg:col-span-7 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs">
           <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">
             <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">
-              Printable Sticker Sheet Layout ({copies} Stickers)
+              تخطيط ورقة الملصقات للطباعة ({copies} استيكر)
             </h3>
-            <span className="text-xs text-slate-400">A4 Page Grid Preview</span>
+            <span className="text-xs text-slate-400">معاينة شبكة صفحة A4</span>
           </div>
 
           <div className="printable-area p-4 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 min-h-[400px]">
@@ -318,7 +319,7 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
               {Array.from({ length: copies }).map((_, idx) => (
                 <StickerItem
                   key={idx}
-                  shopName={settings.shopName || 'Store'}
+                  shopName={settings.shopName || 'سوبر ماركت'}
                   name={displayName}
                   barcode={displayBarcode}
                   price={displayPrice}

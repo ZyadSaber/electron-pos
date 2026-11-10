@@ -15,7 +15,7 @@ import {
 
 export const SmartReorderView: React.FC = () => {
   const suggestions = sqliteDB.getSmartReorderSuggestions();
-  const currency = sqliteDB.getSettings().currencySymbol || '₹';
+  const currency = sqliteDB.getSettings().currencySymbol || 'ج.م';
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>(suggestions.map(s => s.productId));
   const [createdPoSuccess, setCreatedPoSuccess] = useState(false);
@@ -42,7 +42,7 @@ export const SmartReorderView: React.FC = () => {
     // Group by supplier
     const grouped: Record<string, typeof toOrder> = {};
     toOrder.forEach(item => {
-      const sup = item.supplierName || 'General Supplier';
+      const sup = item.supplierName || 'مورد عام';
       if (!grouped[sup]) grouped[sup] = [];
       grouped[sup].push(item);
     });
@@ -62,7 +62,7 @@ export const SmartReorderView: React.FC = () => {
         items: poItems,
         totalAmount: items.reduce((acc, i) => acc + i.estimatedCost, 0),
         status: 'Ordered',
-        notes: 'Generated via Smart Reorder Engine (Auto-replenishment)',
+        notes: 'تم الإنشاء تلقائياً عبر نظام إعادة الطلب الذكي للنواقص',
       });
     });
 
@@ -77,10 +77,10 @@ export const SmartReorderView: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <Zap className="w-6 h-6 text-amber-500" />
-            Smart Inventory Reorder Engine
+            نظام إعادة الطلب الذكي وتفادي نواقص البضاعة
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Calculates 30-day velocity, lead time, and min/max stock thresholds to prevent stockouts automatically.
+            حساب معدل سحب البضاعة وسرعة البيع وفترة التوريد لتنبيهك بنواقص المخزن وإصدار طلبات الموردين فوراً.
           </p>
         </div>
 
@@ -92,15 +92,15 @@ export const SmartReorderView: React.FC = () => {
             className="no-print px-3.5 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-xl font-semibold text-xs transition flex items-center gap-1.5 cursor-pointer"
           >
             <Printer className="w-4 h-4" />
-            Print Order Sheet
+            طباعة بيان النواقص
           </button>
           <button
             onClick={handleGeneratePOs}
             disabled={selectedItems.length === 0}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl font-semibold text-xs shadow-xs transition flex items-center gap-1.5"
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl font-semibold text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
           >
             <ShoppingCart className="w-4 h-4" />
-            Create Purchase Orders ({selectedItems.length})
+            إصدار أوامر توريد ({selectedItems.length})
           </button>
         </div>
       </div>
@@ -108,7 +108,7 @@ export const SmartReorderView: React.FC = () => {
       {createdPoSuccess && (
         <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl flex items-center gap-3 text-xs font-semibold text-emerald-800 dark:text-emerald-200 animate-fadeIn">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-          <span>Purchase Orders successfully generated and placed in Purchase Order management!</span>
+          <span>تم بنجاح إنشاء أوامر الشراء وإدراجها في قائمة أوامر الموردين!</span>
         </div>
       )}
 
@@ -119,8 +119,8 @@ export const SmartReorderView: React.FC = () => {
             <AlertTriangle className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs text-amber-700 dark:text-amber-400 font-medium">Low Stock Items</div>
-            <div className="text-xl font-bold text-amber-900 dark:text-amber-200 mt-0.5">{suggestions.length} Products</div>
+            <div className="text-xs text-amber-700 dark:text-amber-400 font-medium">أصناف قاربت على النفاد</div>
+            <div className="text-xl font-bold text-amber-900 dark:text-amber-200 mt-0.5">{suggestions.length} صنف</div>
           </div>
         </div>
 
@@ -129,9 +129,9 @@ export const SmartReorderView: React.FC = () => {
             <Truck className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs text-sky-700 dark:text-sky-400 font-medium">Selected Vendors</div>
+            <div className="text-xs text-sky-700 dark:text-sky-400 font-medium">الموردون المعنيون</div>
             <div className="text-xl font-bold text-sky-900 dark:text-sky-200 mt-0.5">
-              {new Set(suggestions.filter(s => selectedItems.includes(s.productId)).map(s => s.supplierName)).size} Suppliers
+              {new Set(suggestions.filter(s => selectedItems.includes(s.productId)).map(s => s.supplierName)).size} مورد
             </div>
           </div>
         </div>
@@ -141,9 +141,9 @@ export const SmartReorderView: React.FC = () => {
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">Est. Reorder Cost</div>
+            <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">التكلفة التقديرية للطلبية</div>
             <div className="text-xl font-bold text-emerald-900 dark:text-emerald-200 mt-0.5">
-              {currency}{totalCost.toLocaleString()}
+              {totalCost.toLocaleString()} {currency}
             </div>
           </div>
         </div>
@@ -153,46 +153,46 @@ export const SmartReorderView: React.FC = () => {
       <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="relative w-full sm:w-72">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+            <Search className="w-4 h-4 absolute right-3 top-2.5 text-slate-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Search product or supplier..."
-              className="w-full pl-9 pr-3 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-xs text-slate-800 dark:text-slate-100"
+              placeholder="بحث بالصنف أو اسم المورد..."
+              className="w-full pr-9 pl-3 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-xs text-slate-800 dark:text-slate-100"
             />
           </div>
 
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <button
               onClick={() => setSelectedItems(suggestions.map(s => s.productId))}
-              className="hover:text-emerald-600 font-semibold"
+              className="hover:text-emerald-600 font-semibold cursor-pointer"
             >
-              Select All
+              تحديد الكل
             </button>
             <span>|</span>
             <button
               onClick={() => setSelectedItems([])}
-              className="hover:text-rose-600 font-semibold"
+              className="hover:text-rose-600 font-semibold cursor-pointer"
             >
-              Deselect All
+              إلغاء التحديد
             </button>
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+          <table className="w-full text-right text-xs text-slate-600 dark:text-slate-300">
             <thead className="bg-slate-100 dark:bg-slate-700/60 uppercase text-[10px] font-bold text-slate-500 dark:text-slate-400">
               <tr>
-                <th className="p-3 rounded-l-xl w-10">Select</th>
-                <th className="p-3">Product Name</th>
-                <th className="p-3">Supplier</th>
-                <th className="p-3">Current Stock</th>
-                <th className="p-3">Min Threshold</th>
-                <th className="p-3">Daily Velocity</th>
-                <th className="p-3">Lead Time</th>
-                <th className="p-3">Suggested Reorder Qty</th>
-                <th className="p-3 rounded-r-xl">Est. Cost</th>
+                <th className="p-3 rounded-r-xl w-10 text-center">تحديد</th>
+                <th className="p-3 text-right">اسم الصنف</th>
+                <th className="p-3 text-right">المورد</th>
+                <th className="p-3 text-center">الرصيد الحالي</th>
+                <th className="p-3 text-center">حد الأمان</th>
+                <th className="p-3 text-center">معدل السحب اليومي</th>
+                <th className="p-3 text-center">مدة التوريد</th>
+                <th className="p-3 text-center">الكمية المقترحة</th>
+                <th className="p-3 rounded-l-xl text-left">التكلفة التقديرية</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -200,13 +200,13 @@ export const SmartReorderView: React.FC = () => {
                 <tr>
                   <td colSpan={9} className="p-8 text-center text-slate-400">
                     <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-                    All stock levels are optimal! No items require reordering at this time.
+                    مستويات المخزون ممتازة! لا توجد نواقص تحتاج إعادة طلب حالياً.
                   </td>
                 </tr>
               ) : (
                 filtered.map(s => (
                   <tr key={s.productId} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
-                    <td className="p-3">
+                    <td className="p-3 text-center">
                       <input
                         type="checkbox"
                         checked={selectedItems.includes(s.productId)}
@@ -216,13 +216,13 @@ export const SmartReorderView: React.FC = () => {
                     </td>
                     <td className="p-3 font-semibold text-slate-800 dark:text-slate-100">{s.productName}</td>
                     <td className="p-3 text-slate-500">{s.supplierName}</td>
-                    <td className="p-3 font-bold text-rose-600">{s.currentStock}</td>
-                    <td className="p-3 text-slate-500">{s.minStockLevel}</td>
-                    <td className="p-3">{s.avgDailySales} pcs/day</td>
-                    <td className="p-3 text-slate-500">{s.leadTimeDays} days</td>
-                    <td className="p-3 font-bold text-emerald-600">{s.suggestedQty} pcs</td>
-                    <td className="p-3 font-bold text-slate-800 dark:text-slate-100">
-                      {currency}{s.estimatedCost.toLocaleString()}
+                    <td className="p-3 font-bold text-rose-600 text-center">{s.currentStock}</td>
+                    <td className="p-3 text-slate-500 text-center">{s.minStockLevel}</td>
+                    <td className="p-3 text-center">{s.avgDailySales} قطعة/يوم</td>
+                    <td className="p-3 text-slate-500 text-center">{s.leadTimeDays} أيام</td>
+                    <td className="p-3 font-bold text-emerald-600 text-center">{s.suggestedQty} قطعة</td>
+                    <td className="p-3 font-bold text-slate-800 dark:text-slate-100 text-left">
+                      {s.estimatedCost.toLocaleString()} {currency}
                     </td>
                   </tr>
                 ))

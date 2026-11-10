@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ShopSettings } from '../types';
+import { EmployeeRole, ShopSettings, TabType } from '../types';
 import { sqliteDB } from '../db/sqliteStorage';
+import { canAccessTab } from '../utils/permissions';
 import { 
   Search, 
   X, 
@@ -14,11 +15,12 @@ import {
 
 interface GlobalSearchModalProps {
   settings: ShopSettings;
+  role: EmployeeRole;
   onClose: () => void;
-  onNavigate: (tab: any) => void;
+  onNavigate: (tab: TabType) => void;
 }
 
-export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ settings, onClose, onNavigate }) => {
+export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ settings, role, onClose, onNavigate }) => {
   const [query, setQuery] = useState('');
 
   const products = sqliteDB.getProducts();
@@ -28,24 +30,24 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ settings, 
 
   const cleanQuery = query.toLowerCase().trim();
 
-  const matchingProducts = cleanQuery ? products.filter(p => 
+  const matchingProducts = cleanQuery && canAccessTab(role, 'products') ? products.filter(p =>
     p.name.toLowerCase().includes(cleanQuery) || 
     p.barcode.includes(cleanQuery) ||
     p.category.toLowerCase().includes(cleanQuery)
   ).slice(0, 4) : [];
 
-  const matchingSales = cleanQuery ? sales.filter(s => 
+  const matchingSales = cleanQuery && canAccessTab(role, 'sales_history') ? sales.filter(s =>
     s.invoiceNumber.toLowerCase().includes(cleanQuery) ||
     (s.customerName && s.customerName.toLowerCase().includes(cleanQuery)) ||
     (s.customerPhone && s.customerPhone.includes(cleanQuery))
   ).slice(0, 4) : [];
 
-  const matchingCustomers = cleanQuery ? customers.filter(c => 
+  const matchingCustomers = cleanQuery && canAccessTab(role, 'customers') ? customers.filter(c =>
     c.name.toLowerCase().includes(cleanQuery) || 
     c.phone.includes(cleanQuery)
   ).slice(0, 4) : [];
 
-  const matchingSuppliers = cleanQuery ? suppliers.filter(s => 
+  const matchingSuppliers = cleanQuery && canAccessTab(role, 'suppliers') ? suppliers.filter(s =>
     s.name.toLowerCase().includes(cleanQuery) || 
     s.companyName.toLowerCase().includes(cleanQuery)
   ).slice(0, 4) : [];

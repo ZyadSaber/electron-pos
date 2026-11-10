@@ -59,10 +59,10 @@ export const InventoryIntelligenceView: React.FC<InventoryIntelligenceViewProps>
       <div>
         <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
           <Zap className="w-6 h-6 text-amber-500" />
-          Smart Inventory Intelligence & Shelf Analytics
+          ذكاء المخزون وتحليلات حركة الأرفف والبضاعة
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          Automated stock forecasting: Identify fast-selling items, dead stock, low stock reorders, and shelf locations.
+          تنبؤات حركة السحب: الأصناف الأكثر دوراناً، البضاعة الراكدة التي لا تباع، نواقص المخزن، وتنبيهات تاريخ الصلاحية.
         </p>
       </div>
 
@@ -70,52 +70,52 @@ export const InventoryIntelligenceView: React.FC<InventoryIntelligenceViewProps>
       <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-700 pb-2 overflow-x-auto">
         <button
           onClick={() => setActiveTab('fast')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
             activeTab === 'fast' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
           }`}
         >
           <TrendingUp className="w-4 h-4" />
-          <span>Fast Moving Items ({fastMovingProducts.length})</span>
+          <span>أصناف سريعة السحب ({fastMovingProducts.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('slow')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
             activeTab === 'slow' ? 'bg-amber-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
           }`}
         >
           <TrendingDown className="w-4 h-4" />
-          <span>Slow Moving ({slowMovingProducts.length})</span>
+          <span>حركة بطيئة ({slowMovingProducts.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('dead')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
             activeTab === 'dead' ? 'bg-rose-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
           }`}
         >
           <PackageX className="w-4 h-4" />
-          <span>Dead Stock ({deadStockProducts.length})</span>
+          <span>بضاعة راكدة ({deadStockProducts.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('low')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
             activeTab === 'low' ? 'bg-sky-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
           }`}
         >
           <AlertTriangle className="w-4 h-4" />
-          <span>Low Stock Reorders ({lowStockProducts.length})</span>
+          <span>أصناف قاربت على النفاد ({lowStockProducts.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('expiring')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
             activeTab === 'expiring' ? 'bg-purple-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
           }`}
         >
           <Calendar className="w-4 h-4" />
-          <span>Expiry Risk ({expiringProducts.length})</span>
+          <span>تنبيهات قرب انتهاء الصلاحية ({expiringProducts.length})</span>
         </button>
       </div>
 
@@ -126,30 +126,30 @@ export const InventoryIntelligenceView: React.FC<InventoryIntelligenceViewProps>
           activeTab === 'dead' ? deadStockProducts :
           activeTab === 'low' ? lowStockProducts :
           expiringProducts).map(product => (
-            <div key={product.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 space-y-3 shadow-xs">
+            <div key={product.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 space-y-3 shadow-xs text-right">
               <div className="flex items-start justify-between">
                 <div>
                   <span className="text-[10px] font-mono bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-md text-slate-500">{product.category}</span>
                   <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mt-1">{product.name}</h3>
                   <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-1">
                     <MapPin className="w-3 h-3 text-amber-500" />
-                    <span>Shelf: {product.shelfLocation || 'Unassigned'}</span>
+                    <span>مكان الرف: {product.shelfLocation || 'غير محدد'}</span>
                   </div>
                 </div>
 
-                <div className="text-right">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">In Stock</span>
+                <div className="text-left">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">المخزون</span>
                   <span className={`text-base font-bold ${
                     product.quantity <= settings.lowStockThreshold ? 'text-rose-600' : 'text-emerald-600'
                   }`}>
-                    {product.quantity} {product.unit || 'pcs'}
+                    {product.quantity} {product.unit || 'قطعة'}
                   </span>
                 </div>
               </div>
 
               <div className="pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-between text-xs text-slate-600 dark:text-slate-300">
-                <span>Sold Units: <strong className="text-emerald-600">{productSalesMap[product.id] || 0}</strong></span>
-                <span>Selling Price: <strong>{settings.currencySymbol}{product.sellingPrice}</strong></span>
+                <span>المباع: <strong className="text-emerald-600">{productSalesMap[product.id] || 0}</strong></span>
+                <span>سعر البيع: <strong>{product.sellingPrice} {settings.currencySymbol}</strong></span>
               </div>
             </div>
         ))}

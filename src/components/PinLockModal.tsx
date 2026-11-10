@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { sqliteDB } from '../db/sqliteStorage';
-import { Lock, KeyRound, ShieldAlert, X } from 'lucide-react';
+import { Lock, KeyRound, UserRound } from 'lucide-react';
+import { Employee } from '../types';
 
 interface PinLockModalProps {
-  onUnlock: () => void;
+  onUnlock: (employee: Employee) => void;
   onClose?: () => void;
 }
 
 export const PinLockModal: React.FC<PinLockModalProps> = ({ onUnlock, onClose }) => {
+  const [phone, setPhone] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
 
@@ -26,11 +28,11 @@ export const PinLockModal: React.FC<PinLockModalProps> = ({ onUnlock, onClose })
   const handleVerify = () => {
     if (pin.length !== 4) return;
 
-    const employee = sqliteDB.verifyEmployeePin(pin);
+    const employee = sqliteDB.verifyEmployeeCredentials(phone, pin);
     if (employee) {
-      onUnlock();
+      onUnlock(employee);
     } else {
-      setError('Invalid Employee Security PIN!');
+      setError('رقم الهاتف أو رمز PIN غير صحيح.');
       setPin('');
     }
   };
@@ -44,8 +46,29 @@ export const PinLockModal: React.FC<PinLockModalProps> = ({ onUnlock, onClose })
 
         <div>
           <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">Terminal Security Lock</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Enter your 4-digit staff PIN to unlock POS</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">أدخل رقم هاتفك ورمز PIN لفتح النظام</p>
         </div>
+
+        <label className="block text-right text-xs font-medium text-slate-700 dark:text-slate-300">
+          رقم الهاتف · اسم المستخدم
+          <span className="mt-1 flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 dark:border-slate-700 dark:bg-slate-900">
+            <UserRound className="h-4 w-4 text-slate-400" />
+            <input
+              type="tel"
+              inputMode="tel"
+              autoComplete="username"
+              required
+              value={phone}
+              onChange={event => {
+                setPhone(event.target.value);
+                setError('');
+              }}
+              placeholder="01xxxxxxxxx"
+              dir="ltr"
+              className="w-full bg-transparent py-2.5 text-left font-mono outline-none"
+            />
+          </span>
+        </label>
 
         {/* PIN Display Dots */}
         <div className="flex justify-center gap-3">

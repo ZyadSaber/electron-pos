@@ -25,7 +25,21 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 }) => {
   const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month' | 'all'>('month');
 
-  const currency = settings.currencySymbol || '₹';
+  const currency = settings.currencySymbol || 'ج.م';
+
+  const timeRangeLabels: Record<string, string> = {
+    today: 'اليوم',
+    week: 'هذا الأسبوع',
+    month: 'هذا الشهر',
+    all: 'الكل',
+  };
+
+  const paymentModeLabels: Record<string, string> = {
+    Cash: 'كاش (نقدي)',
+    UPI: 'إنستاباي / محفظة',
+    Card: 'بطاقة بنكية / فيزا',
+    Credit: 'آجل (شكك)',
+  };
 
   // Date filtering logic
   const now = new Date();
@@ -81,16 +95,16 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
   // Export CSV
   const handleExportCSV = () => {
-    let csvStr = `Invoice Number,Date Time,Customer Name,Customer Phone,Items Count,Subtotal,Discount,Tax,Grand Total,Payment Mode,Profit\n`;
+    let csvStr = `رقم الفاتورة,التاريخ والوقت,اسم العميل,رقم الهاتف,عدد الأصناف,المجموع الجزئي,الخصم,الضريبة,الإجمالي,طريقة الدفع,صافي الربح\n`;
     filteredSales.forEach(s => {
       csvStr += `"${s.invoiceNumber}","${s.dateTime}","${s.customerName || ''}","${s.customerPhone || ''}",${s.items.length},${s.subtotal},${s.discountAmount},${s.taxAmount},${s.totalAmount},"${s.paymentMode}",${s.totalProfit}\n`;
     });
 
-    const blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + csvStr], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `grocery_sales_report_${timeRange}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `تقرير_مبيعات_السوبرماركت_${timeRange}_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -104,10 +118,10 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <BarChart3 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-            Offline Sales & Profit Reports
+            تقارير المبيعات والأرباح وإحصائيات المحل
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Detailed performance breakdown, gross profit margins, and best-selling product analysis.
+            تحليل الأداء اليومي والشهري، هوامش الربح الصافي، والأصناف الأكثر مبيعاً في السوبر ماركت.
           </p>
         </div>
 
@@ -124,7 +138,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                     : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
                 }`}
               >
-                {range}
+                {timeRangeLabels[range] || range}
               </button>
             ))}
           </div>
@@ -134,7 +148,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             className="px-4 py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl font-semibold text-xs flex items-center gap-1.5 transition shadow-sm"
           >
             <Download className="w-4 h-4" />
-            Export CSV
+            تصدير ملف إكسل (CSV)
           </button>
         </div>
       </div>
@@ -143,37 +157,37 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
         <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs">
-          <div className="text-xs font-semibold uppercase text-slate-400">Total Gross Revenue</div>
+          <div className="text-xs font-semibold uppercase text-slate-400">إجمالي الإيرادات والمبيعات</div>
           <div className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 mt-2">
-            {currency}{totalRevenue.toLocaleString()}
+            {totalRevenue.toLocaleString()} {currency}
           </div>
-          <p className="text-xs text-slate-500 mt-1">{totalTransactions} completed sales</p>
+          <p className="text-xs text-slate-500 mt-1">{totalTransactions} فاتورة مكتملة</p>
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs">
-          <div className="text-xs font-semibold uppercase text-slate-400">Total Net Profit</div>
+          <div className="text-xs font-semibold uppercase text-slate-400">صافي الربح التقديري</div>
           <div className="text-2xl font-black font-mono text-teal-600 dark:text-teal-400 mt-2">
-            {currency}{totalProfit.toLocaleString()}
+            {totalProfit.toLocaleString()} {currency}
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Margin: <strong>{totalRevenue > 0 ? Math.round((totalProfit / totalRevenue) * 100) : 0}%</strong>
+            هامش الربح: <strong>{totalRevenue > 0 ? Math.round((totalProfit / totalRevenue) * 100) : 0}%</strong>
           </p>
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs">
-          <div className="text-xs font-semibold uppercase text-slate-400">Total Discounts Given</div>
+          <div className="text-xs font-semibold uppercase text-slate-400">إجمالي الخصومات الممنوحة</div>
           <div className="text-2xl font-black font-mono text-rose-600 dark:text-rose-400 mt-2">
-            {currency}{totalDiscount.toLocaleString()}
+            {totalDiscount.toLocaleString()} {currency}
           </div>
-          <p className="text-xs text-slate-500 mt-1">Customer savings offered</p>
+          <p className="text-xs text-slate-500 mt-1">وفورات للزبائن والعملاء</p>
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs">
-          <div className="text-xs font-semibold uppercase text-slate-400">GST / Tax Collected</div>
+          <div className="text-xs font-semibold uppercase text-slate-400">ضريبة القيمة المضافة المحصلة</div>
           <div className="text-2xl font-black font-mono text-sky-600 dark:text-sky-400 mt-2">
-            {currency}{totalTax.toFixed(2)}
+            {totalTax.toFixed(2)} {currency}
           </div>
-          <p className="text-xs text-slate-500 mt-1">Tax liability summary</p>
+          <p className="text-xs text-slate-500 mt-1">إقرار ومستحقات الضرائب</p>
         </div>
 
       </div>
@@ -185,24 +199,24 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           <div className="flex items-center gap-2 mb-4">
             <Award className="w-5 h-5 text-amber-500" />
             <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">
-              Top 10 Best-Selling Grocery Items
+              أفضل 10 أصناف مبيعاً في المحل
             </h3>
           </div>
 
           {bestSellers.length === 0 ? (
             <div className="text-center py-12 text-slate-400 dark:text-slate-500">
-              No sales data found for selected period.
+              لا توجد مبيعات مسجلة في الفترة الزمنية المختارة.
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-right border-collapse">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-700 text-[11px] font-bold uppercase text-slate-400">
-                    <th className="pb-2"># Rank</th>
-                    <th className="pb-2">Product Name</th>
-                    <th className="pb-2 text-center">Qty Sold</th>
-                    <th className="pb-2 text-right">Total Revenue</th>
-                    <th className="pb-2 text-right">Net Profit</th>
+                    <th className="pb-2 text-right"># الترتيب</th>
+                    <th className="pb-2 text-right">اسم الصنف</th>
+                    <th className="pb-2 text-center">الكمية المباعة</th>
+                    <th className="pb-2 text-left">إجمالي الإيراد</th>
+                    <th className="pb-2 text-left">صافي الربح</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs">
@@ -211,13 +225,13 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                       <td className="py-3 font-bold font-mono text-slate-500">#{idx + 1}</td>
                       <td className="py-3 font-semibold text-slate-800 dark:text-slate-200">{item.name}</td>
                       <td className="py-3 text-center font-bold font-mono text-emerald-600 dark:text-emerald-400">
-                        {item.qty} units
+                        {item.qty} وحدة
                       </td>
-                      <td className="py-3 text-right font-mono font-bold text-slate-900 dark:text-slate-100">
-                        {currency}{item.revenue}
+                      <td className="py-3 text-left font-mono font-bold text-slate-900 dark:text-slate-100">
+                        {item.revenue.toLocaleString()} {currency}
                       </td>
-                      <td className="py-3 text-right font-mono text-teal-600 dark:text-teal-400 font-bold">
-                        {currency}{item.profit}
+                      <td className="py-3 text-left font-mono text-teal-600 dark:text-teal-400 font-bold">
+                        {item.profit.toLocaleString()} {currency}
                       </td>
                     </tr>
                   ))}
@@ -233,7 +247,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             <div className="flex items-center gap-2 mb-4">
               <PieChart className="w-5 h-5 text-emerald-600" />
               <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">
-                Payment Method Revenue
+                توزيع الإيراد حسب طريقة الدفع
               </h3>
             </div>
 
@@ -244,8 +258,8 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                 return (
                   <div key={mode} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-xs">
                     <div className="flex justify-between font-semibold text-slate-800 dark:text-slate-200">
-                      <span>{mode} Payments</span>
-                      <span className="font-mono text-emerald-600 font-bold">{currency}{amt} ({percent}%)</span>
+                      <span>{paymentModeLabels[mode] || mode}</span>
+                      <span className="font-mono text-emerald-600 font-bold">{amt.toLocaleString()} {currency} ({percent}%)</span>
                     </div>
 
                     <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden mt-2">
