@@ -2,21 +2,21 @@ import { EmployeeRole, TabType } from '../types';
 
 const roleTabs: Record<EmployeeRole, readonly TabType[]> = {
   Owner: [
-    'dashboard', 'pos', 'products', 'stock_in', 'customers', 'suppliers',
+    'dashboard', 'pos', 'products', 'categories', 'customers', 'suppliers',
     'purchase_orders', 'expenses', 'employees', 'attendance', 'cash_register',
-    'smart_reorder', 'price_history', 'branches', 'sales_history', 'returns',
+    'smart_reorder', 'price_history', 'sales_history', 'returns',
     'inventory_intel', 'reports', 'barcodes', 'backup', 'audit_logs',
     'recycle_bin', 'health_monitor', 'settings',
   ],
   Manager: [
-    'dashboard', 'pos', 'products', 'stock_in', 'customers', 'suppliers',
+    'dashboard', 'pos', 'products', 'categories', 'customers', 'suppliers',
     'purchase_orders', 'expenses', 'employees', 'attendance', 'cash_register',
-    'smart_reorder', 'price_history', 'branches', 'sales_history', 'returns',
+    'smart_reorder', 'price_history', 'sales_history', 'returns',
     'inventory_intel', 'reports', 'barcodes',
   ],
   Cashier: ['pos', 'customers', 'cash_register'],
   'Inventory Staff': [
-    'products', 'stock_in', 'suppliers', 'purchase_orders',
+    'products', 'categories', 'suppliers', 'purchase_orders',
     'smart_reorder', 'inventory_intel', 'barcodes',
   ],
   Accountant: [

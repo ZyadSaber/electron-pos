@@ -2,6 +2,16 @@
 
 Customize your store settings, invoice templates, UPI payment credentials, and hardware options.
 
+## Sample Data Reset Master Key
+
+Resetting sample data, clearing the database, and importing a backup in **Backup & Restore** require confirmation. Reset and clear actions also require a master key. For browser development, create `.env` in the project root and set `MASTER_KEY`; `bun run dev` verifies it through the Vite development server without exposing it in the browser bundle. Before building the Electron app:
+
+1. Copy `.env.example` to `.env`.
+2. Set `MASTER_KEY` to a unique key of your choice.
+3. Build the installer with `bun run electron:build`.
+
+The build includes `.env` as a resource in the packaged app, and Electron's main process verifies the entered key. Do not commit `.env` or expose the Vite development server to untrusted networks. A key shipped with a desktop application can be extracted from the installed files, so this is a confirmation gate rather than protection against someone who controls the device.
+
 ## 🏪 Shop Profile & Invoice Settings
 
 Navigate to **Shop Settings** in the left sidebar menu:
@@ -12,6 +22,10 @@ Navigate to **Shop Settings** in the left sidebar menu:
 * **Shop Address & Contact**: Printed on thermal receipts.
 * **Low Stock Limit Warning**: Minimum quantity trigger for stock alerts (default: `10` units).
 * **Default Tax Rate (%)**: Default GST rate applied to items.
+
+On a new installation or after resetting the database, complete the setup form before signing in. It creates the first Owner account using the store phone number and the four-digit PIN entered in the form. The sample database contains one store and can be accessed with phone `01021020169` and PIN `1234` when sample data is selected.
+
+Barcode labels print as individual 58 × 38 mm labels. Choose the copy count before printing; each copy contains the same selected product label.
 
 ---
 

@@ -26,7 +26,7 @@ A high-performance, **100% Offline-First Grocery POS, Inventory, and Billing Sys
 * **📦 Complete Inventory & Batch Control**: Track stock quantities, low-stock threshold alerts, cost prices, selling prices, wholesale rates, and expiration dates.
 * **🤖 AI-Powered Smart Reordering**: Integrated Google Gemini AI analysis for automated demand forecasting, deadstock warnings, and purchase order drafting.
 * **👥 Customer Ledger & Khata Dues**: Track customer credit accounts, transaction histories, and pending balance payments.
-* **🏢 Multi-Branch & Employee Security**: Multi-store location switching, staff attendance logs, and PIN-protected admin actions.
+* **👥 Employee Security**: Staff attendance logs, role-based access, and PIN-protected admin actions for a single store.
 * **🧾 Custom Barcode Label & Receipt Designer**: Built-in visual label designer and thermal print engine with custom shop headers and GST formatting.
 * **🛡️ Local SQLite Storage & Disaster Recovery**: Embedded client-side SQLite storage with one-click full database JSON export, import, and recycle bin recovery.
 * **💻 Desktop Electron Package**: Ready to package into a standalone offline Windows `.exe` installer or Linux AppImage.

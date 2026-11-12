@@ -32,7 +32,6 @@ export interface ShopSettings {
   discountThresholdPercent?: number;
   enableLoyalty?: boolean;
   loyaltyPointRatio?: number; // 1 point per X currency spent
-  activeBranchId?: string;
   pinnedProductIds?: string[];
   pinnedReportIds?: string[];
 
@@ -43,15 +42,6 @@ export interface ShopSettings {
   defaultPaymentNote?: string;
   upiReceiptFooter?: string;
   merchantLogo?: string;
-}
-
-export interface Branch {
-  id: string;
-  name: string;
-  code: string;
-  address: string;
-  phone: string;
-  isPrimary?: boolean;
 }
 
 export interface ProductBatch {
@@ -111,7 +101,6 @@ export interface Product {
   isCombo?: boolean;
   comboItems?: ComboItem[];
   variants?: ProductVariant[];
-  branchId?: string;
   isPinned?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -153,7 +142,6 @@ export interface Sale {
   id: string;
   invoiceNumber: string;
   dateTime: string; // ISO string
-  branchId?: string;
   customerId?: string;
   customerName?: string;
   customerPhone?: string;
@@ -193,12 +181,13 @@ export interface CustomerLedgerEntry {
   id: string;
   customerId: string;
   date: string;
-  type: 'SaleCredit' | 'PaymentReceived' | 'Adjustment';
+  type: 'SaleCredit' | 'PaymentReceived' | 'Return' | 'Adjustment';
   referenceNo: string;
   debit: number;
   credit: number;
   balance: number;
   notes?: string;
+  paymentMode?: 'Cash' | 'UPI' | 'Bank' | 'Card';
 }
 
 export interface Customer {
@@ -217,7 +206,6 @@ export interface Customer {
   creditLimit?: number;
   dueDate?: string;
   tag: 'VIP' | 'Regular' | 'Wholesale' | 'Distributor';
-  branchId?: string;
   createdAt: string;
 }
 
@@ -240,6 +228,7 @@ export interface POItem {
   productName: string;
   qty: number;
   purchasePrice: number;
+  receivedQty?: number;
 }
 
 export interface PurchaseOrder {
@@ -249,11 +238,25 @@ export interface PurchaseOrder {
   supplierName: string;
   orderDate: string;
   receivedDate?: string;
-  status: 'Draft' | 'Ordered' | 'Received' | 'Cancelled';
+  invoiceNumber?: string;
+  status: 'Draft' | 'Ordered' | 'Partially Received' | 'Received' | 'Cancelled';
   items: POItem[];
   totalAmount: number;
+  invoiceNumbers?: string[];
   notes?: string;
-  branchId?: string;
+}
+
+export interface SupplierLedgerEntry {
+  id: string;
+  supplierId: string;
+  date: string;
+  type: 'Invoice' | 'Payment' | 'Return' | 'Adjustment';
+  referenceNo: string;
+  debit: number;
+  credit: number;
+  balance: number;
+  notes?: string;
+  paymentMode?: 'Cash' | 'UPI' | 'Bank' | 'Card';
 }
 
 export type ExpenseCategory = 
@@ -272,7 +275,6 @@ export interface Expense {
   date: string; // YYYY-MM-DD
   paymentMode: 'Cash' | 'UPI' | 'Bank' | 'Card';
   notes?: string;
-  branchId?: string;
   createdAt: string;
 }
 
@@ -289,7 +291,6 @@ export interface Employee {
   pin: string; // 4-digit security PIN
   photoUrl?: string;
   status: 'Active' | 'Inactive';
-  branchId?: string;
 }
 
 export interface AttendanceRecord {
@@ -411,7 +412,7 @@ export type TabType =
   | 'dashboard'
   | 'pos'
   | 'products'
-  | 'stock_in'
+  | 'categories'
   | 'customers'
   | 'suppliers'
   | 'purchase_orders'
@@ -423,7 +424,6 @@ export type TabType =
   | 'reorder_engine'
   | 'smart_reorder'
   | 'price_history'
-  | 'branches'
   | 'sales_history'
   | 'returns'
   | 'inventory_intel'

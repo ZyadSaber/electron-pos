@@ -3,6 +3,8 @@
  */
 
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { timingSafeEqual } from 'node:crypto';
+import { parse } from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -11,6 +13,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let mainWindow = null;
+
+const envPath = app.isPackaged
+  ? path.join(process.resourcesPath, '.env')
+  : path.join(__dirname, '..', '.env');
+
+if (fs.existsSync(envPath)) {
+  for (const [key, value] of Object.entries(parse(fs.readFileSync(envPath)))) {
+    process.env[key] ??= value;
+  }
+}
 
 // Ensure single instance lock for desktop application
 const gotTheLock = app.requestSingleInstanceLock();
@@ -133,3 +145,18 @@ ipcMain.handle('print-receipt', async (event, options = {}) => {
   });
 });
 
+ipcMain.handle('verify-master-key', (event, enteredKey) => {
+  const masterKey = process.env.MASTER_KEY;
+  if (!masterKey || masterKey.length > 256) return { configured: false, authorized: false };
+  if (event.sender !== mainWindow?.webContents) return { configured: true, authorized: false };
+  if (typeof enteredKey !== 'string' || enteredKey.length === 0 || enteredKey.length > 256) {
+    return { configured: true, authorized: false };
+  }
+
+  const enteredKeyBuffer = Buffer.from(enteredKey, 'utf8');
+  const masterKeyBuffer = Buffer.from(masterKey, 'utf8');
+  const authorized = enteredKeyBuffer.length === masterKeyBuffer.length
+    && timingSafeEqual(enteredKeyBuffer, masterKeyBuffer);
+
+  return { configured: true, authorized };
+});

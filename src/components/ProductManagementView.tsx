@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Product, ShopSettings } from '../types';
+import { CategoryNode, Product, ShopSettings } from '../types';
 import { 
   Package, 
   Plus, 
@@ -15,35 +15,48 @@ import {
   DollarSign, 
   Truck, 
   Tag,
-  Sparkles
+  Sparkles,
+  FileSpreadsheet,
+  Tags,
 } from 'lucide-react';
+import {
+  ProductExcelImportModal,
+} from './ProductExcelImportModal';
+import type { ProductExcelImportRow, ProductExcelImportResult } from './ProductExcelImportModal';
 
 interface ProductManagementViewProps {
   products: Product[];
+  categories: CategoryNode[];
   settings: ShopSettings;
   onSaveProduct: (productData: Partial<Product> & { name: string; barcode: string; purchasePrice: number; sellingPrice: number; quantity: number }) => void;
+  onImportProducts: (rows: ProductExcelImportRow[]) => ProductExcelImportResult;
   onDeleteProduct: (id: string) => void;
   onOpenBarcodeGenerator: (product: Product) => void;
+  onManageCategories: () => void;
 }
 
 export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
   products,
+  categories: savedCategories,
   settings,
   onSaveProduct,
+  onImportProducts,
   onDeleteProduct,
   onOpenBarcodeGenerator,
+  onManageCategories,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'low' | 'out' | 'expiring'>('all');
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedCategory, setSelectedCategory] = useState<string>('الكل');
 
   // Modal State for Add / Edit
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
-    category: 'Grains & Atta',
+    category: '',
     barcode: '',
     purchasePrice: '',
     sellingPrice: '',
@@ -55,13 +68,17 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
 
   const currency = settings.currencySymbol || 'ج.م';
 
-  const categories = ['الكل', ...Array.from(new Set(products.map(p => p.category)))];
+  const categoryOptions = Array.from(new Set([
+    ...savedCategories.map(category => category.name),
+    ...products.map(product => product.category).filter(Boolean),
+  ]));
+  const categories = ['الكل', ...categoryOptions];
 
   const handleOpenAddModal = () => {
     setEditingProduct(null);
     setFormData({
       name: '',
-      category: 'أرز ومكرونة وحبوب',
+      category: categoryOptions[0] || '',
       barcode: `${Math.floor(6220000000000 + Math.random() * 90000000000)}`,
       purchasePrice: '',
       sellingPrice: '',
@@ -96,7 +113,7 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.barcode || !formData.purchasePrice || !formData.sellingPrice || !formData.quantity) {
+    if (!formData.name || !formData.category || !formData.barcode || !formData.purchasePrice || !formData.sellingPrice || !formData.quantity) {
       alert('يرجى ملء جميع الحقول الإلزامية للمنتج.');
       return;
     }
@@ -105,6 +122,8 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
       id: editingProduct ? editingProduct.id : undefined,
       name: formData.name,
       category: formData.category,
+      parentCategoryId: savedCategories.find(category => category.name === formData.category)?.id
+        || (editingProduct?.category === formData.category ? editingProduct.parentCategoryId : undefined),
       barcode: formData.barcode,
       purchasePrice: parseFloat(formData.purchasePrice),
       sellingPrice: parseFloat(formData.sellingPrice),
@@ -158,13 +177,32 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAddModal}
-          className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-xs flex items-center gap-2 shadow-md hover:shadow-emerald-500/20 transition self-start sm:self-auto cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>إضافة صنف جديد</span>
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={onManageCategories}
+            className="px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-xl font-semibold text-xs flex items-center gap-2 transition cursor-pointer"
+          >
+            <Tags className="w-4 h-4" />
+            <span>إدارة التصنيفات</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsImportModalOpen(true)}
+            className="px-4 py-2.5 bg-white dark:bg-slate-700 border border-emerald-600 text-emerald-700 dark:text-emerald-300 rounded-xl font-semibold text-xs flex items-center gap-2 transition cursor-pointer"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            <span>استيراد من Excel</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleOpenAddModal}
+            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-xs flex items-center gap-2 shadow-md hover:shadow-emerald-500/20 transition cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>إضافة صنف جديد</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter and Search Bar */}
@@ -375,6 +413,13 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
       </div>
 
       {/* Add / Edit Product Modal */}
+      {isImportModalOpen && (
+        <ProductExcelImportModal
+          onClose={() => setIsImportModalOpen(false)}
+          onImport={onImportProducts}
+        />
+      )}
+
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-150 my-auto text-right">
@@ -412,26 +457,18 @@ export const ProductManagementView: React.FC<ProductManagementViewProps> = ({
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     القسم / التصنيف *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     required
-                    list="category-suggestions"
                     value={formData.category}
                     onChange={e => setFormData({ ...formData, category: e.target.value })}
                     className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                  <datalist id="category-suggestions">
-                    <option value="أرز ومكرونة وحبوب" />
-                    <option value="زيوت وسمن" />
-                    <option value="سكر وسلع تموينية" />
-                    <option value="بهارات وعطارة وملح" />
-                    <option value="مشروبات وشاي وقهوة" />
-                    <option value="ألبان وأجبان ومخبوزات" />
-                    <option value="مقرمشات وبسكويت وشيكولاتة" />
-                    <option value="منظفات وعناية منزلية" />
-                    <option value="عناية شخصية وصابون" />
-                    <option value="عروض وباقات توفير" />
-                  </datalist>
+                  >
+                    <option value="">اختر تصنيفاً</option>
+                    {categoryOptions.map(category => <option key={category} value={category}>{category}</option>)}
+                  </select>
+                  <button type="button" onClick={onManageCategories} className="mt-1 text-[10px] text-emerald-700 dark:text-emerald-400 hover:underline">
+                    إدارة التصنيفات أو إضافة تصنيف جديد
+                  </button>
                 </div>
 
                 <div>

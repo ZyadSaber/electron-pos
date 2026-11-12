@@ -8,10 +8,11 @@ import {
   ShopSettings,
   Product,
   Sale,
-  IncomingStockLog,
   CartItem,
   DashboardMetrics,
-  Employee
+  Employee,
+  Customer,
+  CategoryNode,
 } from './types';
 import { sqliteDB } from './db/sqliteStorage';
 import { canAccessTab, canManageCashShifts, getDefaultTab } from './utils/permissions';
@@ -23,7 +24,8 @@ import { FirstTimeSetupModal } from './components/FirstTimeSetupModal';
 import { DashboardView } from './components/DashboardView';
 import { POSBillingView } from './components/POSBillingView';
 import { ProductManagementView } from './components/ProductManagementView';
-import { IncomingStockView } from './components/IncomingStockView';
+import { CategoryManagementView } from './components/CategoryManagementView';
+import type { ProductExcelImportRow, ProductExcelImportResult } from './components/ProductExcelImportModal';
 import { SalesHistoryView } from './components/SalesHistoryView';
 import { ReportsView } from './components/ReportsView';
 import { BarcodeGeneratorView } from './components/BarcodeGeneratorView';
@@ -49,19 +51,18 @@ import { LabelDesignerModal } from './components/LabelDesignerModal';
 // Modules 28-50 Advanced Enterprise Views
 import { CashRegisterView } from './components/CashRegisterView';
 import { SmartReorderView } from './components/SmartReorderView';
-import { BranchManagementView } from './components/BranchManagementView';
 import { RecycleBinView } from './components/RecycleBinView';
 import { HealthMonitorView } from './components/HealthMonitorView';
 import { PriceHistoryView } from './components/PriceHistoryView';
-import { UpiSettingsSection } from './components/UpiSettingsSection';
 
 import { Store, Phone, MapPin, FileText, CheckCircle } from 'lucide-react';
 
 export default function App() {
   const [settings, setSettings] = useState<ShopSettings>(() => sqliteDB.getSettings());
   const [products, setProducts] = useState<Product[]>(() => sqliteDB.getProducts());
+  const [categories, setCategories] = useState<CategoryNode[]>(() => sqliteDB.getCategories());
+  const [customers, setCustomers] = useState<Customer[]>(() => sqliteDB.getCustomers());
   const [sales, setSales] = useState<Sale[]>(() => sqliteDB.getSales());
-  const [stockLogs, setStockLogs] = useState<IncomingStockLog[]>(() => sqliteDB.getStockLogs());
 
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [currentUser, setCurrentUser] = useState<Employee | null>(() => sqliteDB.getCurrentUser());
@@ -78,6 +79,9 @@ export default function App() {
   const [isTerminalLocked, setIsTerminalLocked] = useState(false);
   const [isLabelDesignerOpen, setIsLabelDesignerOpen] = useState(false);
   const [settingsResetModal, setSettingsResetModal] = useState<'clear' | 'sample' | null>(null);
+  const [settingsMasterKey, setSettingsMasterKey] = useState('');
+  const [settingsResetError, setSettingsResetError] = useState<string | null>(null);
+  const [isVerifyingSettingsReset, setIsVerifyingSettingsReset] = useState(false);
   const [settingsToast, setSettingsToast] = useState<string | null>(null);
   const [accessMessage, setAccessMessage] = useState<string | null>(null);
 
@@ -112,9 +116,16 @@ export default function App() {
   const refreshAllState = () => {
     setSettings(sqliteDB.getSettings());
     setProducts(sqliteDB.getProducts());
+    setCategories(sqliteDB.getCategories());
+    setCustomers(sqliteDB.getCustomers());
     setSales(sqliteDB.getSales());
-    setStockLogs(sqliteDB.getStockLogs());
   };
+
+  useEffect(() => {
+    if (activeTab === 'pos') {
+      setCustomers(sqliteDB.getCustomers());
+    }
+  }, [activeTab]);
 
   // --- Handlers ---
   const handleUpdateSettings = (newSettings: Partial<ShopSettings>) => {
@@ -164,19 +175,53 @@ export default function App() {
     refreshAllState();
   };
 
-  const handleDeleteProduct = (id: string) => {
-    sqliteDB.deleteProduct(id);
-    refreshAllState();
+  const handleSaveCategory = (categoryData: Partial<CategoryNode> & { name: string }) => {
+    sqliteDB.saveCategory(categoryData);
+    setCategories(sqliteDB.getCategories());
+    setProducts(sqliteDB.getProducts());
   };
 
-  const handleAddExistingStock = (
-    productId: string,
-    qtyToAdd: number,
-    newPurchasePrice?: number,
-    newSellingPrice?: number,
-    supplierName?: string
-  ) => {
-    sqliteDB.addStock(productId, qtyToAdd, newPurchasePrice, newSellingPrice, supplierName);
+  const handleDeleteCategory = (id: string) => {
+    const deleted = sqliteDB.deleteCategory(id);
+    setCategories(sqliteDB.getCategories());
+    return deleted;
+  };
+
+  const handleSaveCustomer = (customerData: { name: string; phone: string }): Customer => {
+    const normalizedPhone = customerData.phone.replace(/\D/g, '');
+    const existingCustomer = sqliteDB.getCustomers().find(
+      customer => customer.phone.replace(/\D/g, '') === normalizedPhone,
+    );
+    const customer = existingCustomer || sqliteDB.saveCustomer(customerData);
+    setCustomers(sqliteDB.getCustomers());
+    return customer;
+  };
+
+  const handleImportProducts = (rows: ProductExcelImportRow[]): ProductExcelImportResult => {
+    const failedRows: number[] = [];
+    const seenBarcodes = new Set(products.map(product => product.barcode).filter(Boolean));
+    let imported = 0;
+
+    rows.forEach(({ rowNumber, product }) => {
+      try {
+        if (product.barcode && seenBarcodes.has(product.barcode)) {
+          throw new Error(`Duplicate barcode "${product.barcode}".`);
+        }
+        sqliteDB.saveProduct(product);
+        if (product.barcode) seenBarcodes.add(product.barcode);
+        imported += 1;
+      } catch (error) {
+        console.error(`Failed to import product from spreadsheet row ${rowNumber}`, error);
+        failedRows.push(rowNumber);
+      }
+    });
+
+    refreshAllState();
+    return { imported, failedRows };
+  };
+
+  const handleDeleteProduct = (id: string) => {
+    sqliteDB.deleteProduct(id);
     refreshAllState();
   };
 
@@ -187,7 +232,8 @@ export default function App() {
     paymentMode: 'Cash' | 'UPI' | 'Card' | 'Credit',
     receivedAmount: number,
     discountAmount: number,
-    taxPercent: number
+    taxPercent: number,
+    customerId?: string
   ): Sale => {
     const sale = sqliteDB.recordSale(
       cartItems,
@@ -196,7 +242,9 @@ export default function App() {
       paymentMode,
       receivedAmount,
       discountAmount,
-      taxPercent
+      taxPercent,
+      '',
+      customerId,
     );
 
     refreshAllState();
@@ -242,15 +290,69 @@ export default function App() {
     return ok;
   };
 
-  const handleResetToSampleData = () => {
+  const verifyMasterKey = async (masterKey: string): Promise<{ configured: boolean; authorized: boolean }> => {
+    if (window.electronAPI) {
+      return window.electronAPI.verifyMasterKey(masterKey);
+    }
+
+    const response = await fetch('/__verify-master-key', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ masterKey }),
+    });
+    if (!response.ok) {
+      throw new Error('Master key verification failed.');
+    }
+
+    const result: unknown = await response.json();
+    if (
+      typeof result !== 'object'
+      || result === null
+      || !('configured' in result)
+      || typeof result.configured !== 'boolean'
+      || !('authorized' in result)
+      || typeof result.authorized !== 'boolean'
+    ) {
+      throw new Error('Invalid master key verification response.');
+    }
+
+    return { configured: result.configured, authorized: result.authorized };
+  };
+
+  const handleResetToSampleData = async (masterKey: string) => {
+    const verification = await verifyMasterKey(masterKey);
+    if (!verification.configured || !verification.authorized) {
+      return verification;
+    }
+
     sqliteDB.resetToSampleData();
+    sqliteDB.setCurrentUser(null);
+    setCurrentUser(null);
+    refreshAllState();
+    return verification;
+  };
+
+  const handleAuthorizedClearAllData = async (masterKey: string) => {
+    const verification = await verifyMasterKey(masterKey);
+    if (verification.configured && verification.authorized) {
+      handleClearAllDataForFreshStart();
+    }
+    return verification;
+  };
+
+  const handleClearAllDataForFreshStart = (customSettings?: Partial<ShopSettings>) => {
+    sqliteDB.clearAllDataForFreshStart(customSettings);
     sqliteDB.setCurrentUser(null);
     setCurrentUser(null);
     refreshAllState();
   };
 
-  const handleClearAllDataForFreshStart = (customSettings?: Partial<ShopSettings>) => {
-    sqliteDB.clearAllDataForFreshStart(customSettings);
+  const handleCompleteFirstTimeSetup = (
+    newSettings: Partial<ShopSettings>,
+    rootPin: string,
+    dataMode: 'clean' | 'sample',
+  ) => {
+    sqliteDB.completeFirstTimeSetup(newSettings, rootPin, dataMode);
     sqliteDB.setCurrentUser(null);
     setCurrentUser(null);
     refreshAllState();
@@ -274,8 +376,7 @@ export default function App() {
       return (
         <FirstTimeSetupModal
           isOpen
-          onSave={handleUpdateSettings}
-          onClearAllData={handleClearAllDataForFreshStart}
+          onComplete={handleCompleteFirstTimeSetup}
           initialSettings={settings}
         />
       );
@@ -316,265 +417,258 @@ export default function App() {
                   {accessMessage}
                 </div>
               )}
-          {activeTab === 'dashboard' && (
-            <DashboardView
-              metrics={metrics}
-              recentSales={sales}
-              lowStockProducts={lowStockProducts}
-              settings={settings}
-              onNavigate={handleNavigate}
-              onViewInvoice={handleViewInvoice}
-              onQuickAddProduct={() => handleNavigate('products')}
-              role={currentUser.role}
-            />
-          )}
+              {activeTab === 'dashboard' && (
+                <DashboardView
+                  metrics={metrics}
+                  recentSales={sales}
+                  lowStockProducts={lowStockProducts}
+                  settings={settings}
+                  onNavigate={handleNavigate}
+                  onViewInvoice={handleViewInvoice}
+                  onQuickAddProduct={() => handleNavigate('products')}
+                  role={currentUser.role}
+                />
+              )}
 
-          {activeTab === 'pos' && (
-            <POSBillingView
-              products={products}
-              settings={settings}
-              onRecordSale={handleRecordSale}
-              onOpenCameraScanner={() => setIsCameraScannerOpen(true)}
-              scannedBarcode={scannedBarcode}
-              onClearScannedBarcode={() => setScannedBarcode(null)}
-            />
-          )}
+              {activeTab === 'pos' && (
+                <POSBillingView
+                  products={products}
+                  customers={customers}
+                  settings={settings}
+                  onSaveCustomer={handleSaveCustomer}
+                  onRecordSale={handleRecordSale}
+                  onOpenCameraScanner={() => setIsCameraScannerOpen(true)}
+                  scannedBarcode={scannedBarcode}
+                  onClearScannedBarcode={() => setScannedBarcode(null)}
+                />
+              )}
 
-          {activeTab === 'customers' && (
-            <CustomerManagementView
-              settings={settings}
-              onSelectCustomerForPOS={(cust) => {
-                handleNavigate('pos');
-              }}
-            />
-          )}
+              {activeTab === 'customers' && (
+                <CustomerManagementView
+                  settings={settings}
+                  onSelectCustomerForPOS={(cust) => {
+                    handleNavigate('pos');
+                  }}
+                />
+              )}
 
-          {activeTab === 'cash_register' && (
-            <CashRegisterView currentUser={currentUser} />
-          )}
+              {activeTab === 'cash_register' && (
+                <CashRegisterView currentUser={currentUser} />
+              )}
 
-          {activeTab === 'smart_reorder' && (
-            <SmartReorderView />
-          )}
+              {activeTab === 'smart_reorder' && (
+                <SmartReorderView />
+              )}
 
-          {activeTab === 'branches' && (
-            <BranchManagementView />
-          )}
+              {activeTab === 'recycle_bin' && (
+                <RecycleBinView />
+              )}
 
-          {activeTab === 'recycle_bin' && (
-            <RecycleBinView />
-          )}
+              {activeTab === 'health_monitor' && (
+                <HealthMonitorView />
+              )}
 
-          {activeTab === 'health_monitor' && (
-            <HealthMonitorView />
-          )}
+              {activeTab === 'price_history' && (
+                <PriceHistoryView />
+              )}
 
-          {activeTab === 'price_history' && (
-            <PriceHistoryView />
-          )}
+              {activeTab === 'suppliers' && (
+                <SupplierManagementView
+                  settings={settings}
+                />
+              )}
 
-          {activeTab === 'suppliers' && (
-            <SupplierManagementView
-              settings={settings}
-            />
-          )}
+              {activeTab === 'purchase_orders' && (
+                <PurchaseOrderView
+                  settings={settings}
+                  onDataChanged={refreshAllState}
+                />
+              )}
 
-          {activeTab === 'purchase_orders' && (
-            <PurchaseOrderView
-              settings={settings}
-            />
-          )}
+              {activeTab === 'expenses' && (
+                <ExpenseManagementView
+                  settings={settings}
+                />
+              )}
 
-          {activeTab === 'expenses' && (
-            <ExpenseManagementView
-              settings={settings}
-            />
-          )}
+              {activeTab === 'employees' && (
+                <EmployeeManagementView
+                  settings={settings}
+                  onCurrentUserChange={handleLogin}
+                />
+              )}
 
-          {activeTab === 'employees' && (
-            <EmployeeManagementView
-              settings={settings}
-              onCurrentUserChange={handleLogin}
-            />
-          )}
+              {activeTab === 'attendance' && (
+                <AttendanceView
+                  settings={settings}
+                />
+              )}
 
-          {activeTab === 'attendance' && (
-            <AttendanceView
-              settings={settings}
-            />
-          )}
+              {activeTab === 'inventory_intel' && (
+                <InventoryIntelligenceView
+                  settings={settings}
+                />
+              )}
 
-          {activeTab === 'inventory_intel' && (
-            <InventoryIntelligenceView
-              settings={settings}
-            />
-          )}
+              {activeTab === 'returns' && (
+                <ReturnsExchangesView
+                  settings={settings}
+                  onViewInvoice={handleViewInvoice}
+                  onReturnProcessed={refreshAllState}
+                />
+              )}
 
-          {activeTab === 'returns' && (
-            <ReturnsExchangesView
-              settings={settings}
-              onViewInvoice={handleViewInvoice}
-              onReturnProcessed={refreshAllState}
-            />
-          )}
+              {activeTab === 'audit_logs' && (
+                <AuditLogsView
+                  settings={settings}
+                />
+              )}
 
-          {activeTab === 'audit_logs' && (
-            <AuditLogsView
-              settings={settings}
-            />
-          )}
+              {activeTab === 'products' && (
+                <ProductManagementView
+                  products={products}
+                  categories={categories}
+                  settings={settings}
+                  onSaveProduct={handleSaveProduct}
+                  onImportProducts={handleImportProducts}
+                  onDeleteProduct={handleDeleteProduct}
+                  onOpenBarcodeGenerator={handleOpenBarcodeGeneratorForProduct}
+                  onManageCategories={() => handleNavigate('categories')}
+                />
+              )}
 
-          {activeTab === 'products' && (
-            <ProductManagementView
-              products={products}
-              settings={settings}
-              onSaveProduct={handleSaveProduct}
-              onDeleteProduct={handleDeleteProduct}
-              onOpenBarcodeGenerator={handleOpenBarcodeGeneratorForProduct}
-            />
-          )}
+              {activeTab === 'categories' && (
+                <CategoryManagementView
+                  categories={categories}
+                  products={products}
+                  onSaveCategory={handleSaveCategory}
+                  onDeleteCategory={handleDeleteCategory}
+                  onNavigate={handleNavigate}
+                />
+              )}
 
-          {activeTab === 'stock_in' && (
-            <IncomingStockView
-              products={products}
-              settings={settings}
-              onAddExistingStock={handleAddExistingStock}
-              onSaveNewProduct={handleSaveProduct}
-              stockLogs={stockLogs}
-              onOpenCameraScanner={() => setIsCameraScannerOpen(true)}
-              scannedBarcode={scannedBarcode}
-              onClearScannedBarcode={() => setScannedBarcode(null)}
-            />
-          )}
+              {activeTab === 'sales_history' && (
+                <SalesHistoryView
+                  sales={sales}
+                  settings={settings}
+                  onViewInvoice={handleViewInvoice}
+                  onCancelSale={handleCancelSale}
+                  canCancelSales={canManageCashShifts(currentUser.role)}
+                />
+              )}
 
-          {activeTab === 'sales_history' && (
-            <SalesHistoryView
-              sales={sales}
-              settings={settings}
-              onViewInvoice={handleViewInvoice}
-              onCancelSale={handleCancelSale}
-              canCancelSales={canManageCashShifts(currentUser.role)}
-            />
-          )}
+              {activeTab === 'reports' && (
+                <ReportsView
+                  sales={sales}
+                  products={products}
+                  settings={settings}
+                />
+              )}
 
-          {activeTab === 'reports' && (
-            <ReportsView
-              sales={sales}
-              products={products}
-              settings={settings}
-            />
-          )}
+              {activeTab === 'barcodes' && (
+                <BarcodeGeneratorView
+                  products={products}
+                  selectedProductForLabel={productForBarcodeLabel}
+                  settings={settings}
+                />
+              )}
 
-          {activeTab === 'barcodes' && (
-            <BarcodeGeneratorView
-              products={products}
-              selectedProductForLabel={productForBarcodeLabel}
-              settings={settings}
-            />
-          )}
+              {activeTab === 'backup' && (
+                <BackupRestoreView
+                  onExportBackup={handleExportBackup}
+                  onImportBackup={handleImportBackup}
+                  onResetToSampleData={handleResetToSampleData}
+                  onClearAllData={handleAuthorizedClearAllData}
+                />
+              )}
 
-          {activeTab === 'backup' && (
-            <BackupRestoreView
-              onExportBackup={handleExportBackup}
-              onImportBackup={handleImportBackup}
-              onResetToSampleData={handleResetToSampleData}
-              onClearAllData={handleClearAllDataForFreshStart}
-            />
-          )}
+              {activeTab === 'settings' && (
+                <div className="p-6 max-w-3xl mx-auto space-y-6">
+                  <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-4">
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 border-b border-slate-200 dark:border-slate-700 pb-3">
+                      بيانات المحل وإعدادات الفاتورة
+                    </h2>
 
-          {activeTab === 'settings' && (
-            <div className="p-6 max-w-3xl mx-auto space-y-6">
-              <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-4">
-                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 border-b border-slate-200 dark:border-slate-700 pb-3">
-                  بيانات المحل وإعدادات الفاتورة
-                </h2>
+                    <div className="grid grid-cols-2 gap-4 text-xs">
+                      <div>
+                        <label className="block font-semibold mb-1">اسم المحل / الماركت</label>
+                        <input
+                          type="text"
+                          value={settings.shopName}
+                          onChange={e => handleUpdateSettings({ shopName: e.target.value })}
+                          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl"
+                        />
+                      </div>
 
-                <div className="grid grid-cols-2 gap-4 text-xs">
-                  <div>
-                    <label className="block font-semibold mb-1">اسم المحل / الماركت</label>
-                    <input
-                      type="text"
-                      value={settings.shopName}
-                      onChange={e => handleUpdateSettings({ shopName: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl"
-                    />
+                      <div>
+                        <label className="block font-semibold mb-1">اسم المالك / المدير</label>
+                        <input
+                          type="text"
+                          value={settings.ownerName}
+                          onChange={e => handleUpdateSettings({ ownerName: e.target.value })}
+                          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold mb-1">رقم الهاتف / الموبايل</label>
+                        <input
+                          type="text"
+                          value={settings.phone}
+                          onChange={e => handleUpdateSettings({ phone: e.target.value })}
+                          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold mb-1">الرقم الضريبي / السجل التجاري</label>
+                        <input
+                          type="text"
+                          value={settings.gstNumber || ''}
+                          onChange={e => handleUpdateSettings({ gstNumber: e.target.value })}
+                          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl"
+                        />
+                      </div>
+
+                      <div className="col-span-2">
+                        <label className="block font-semibold mb-1">عنوان المحل</label>
+                        <input
+                          type="text"
+                          value={settings.address}
+                          onChange={e => handleUpdateSettings({ address: e.target.value })}
+                          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold mb-1">تنبيه الحد الأدنى للنواقص بالمخزن</label>
+                        <input
+                          type="number"
+                          value={settings.lowStockThreshold}
+                          onChange={e => handleUpdateSettings({ lowStockThreshold: parseInt(e.target.value) || 10 })}
+                          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl font-mono"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold mb-1">نسبة ضريبة القيمة المضافة الافتراضية (%)</label>
+                        <input
+                          type="number"
+                          value={settings.defaultTaxPercent}
+                          onChange={e => handleUpdateSettings({ defaultTaxPercent: parseFloat(e.target.value) || 0 })}
+                          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 text-xs text-emerald-800 dark:text-emerald-200 flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
+                      <span>يتم حفظ جميع الإعدادات تلقائياً في قاعدة بيانات SQLite المحلية على جهازك.</span>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block font-semibold mb-1">اسم المالك / المدير</label>
-                    <input
-                      type="text"
-                      value={settings.ownerName}
-                      onChange={e => handleUpdateSettings({ ownerName: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-semibold mb-1">رقم الهاتف / الموبايل</label>
-                    <input
-                      type="text"
-                      value={settings.phone}
-                      onChange={e => handleUpdateSettings({ phone: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-semibold mb-1">الرقم الضريبي / السجل التجاري</label>
-                    <input
-                      type="text"
-                      value={settings.gstNumber || ''}
-                      onChange={e => handleUpdateSettings({ gstNumber: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl"
-                    />
-                  </div>
-
-                  <div className="col-span-2">
-                    <label className="block font-semibold mb-1">عنوان المحل</label>
-                    <input
-                      type="text"
-                      value={settings.address}
-                      onChange={e => handleUpdateSettings({ address: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-semibold mb-1">تنبيه الحد الأدنى للنواقص بالمخزن</label>
-                    <input
-                      type="number"
-                      value={settings.lowStockThreshold}
-                      onChange={e => handleUpdateSettings({ lowStockThreshold: parseInt(e.target.value) || 10 })}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-semibold mb-1">نسبة ضريبة القيمة المضافة الافتراضية (%)</label>
-                    <input
-                      type="number"
-                      value={settings.defaultTaxPercent}
-                      onChange={e => handleUpdateSettings({ defaultTaxPercent: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 text-xs text-emerald-800 dark:text-emerald-200 flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <span>يتم حفظ جميع الإعدادات تلقائياً في قاعدة بيانات SQLite المحلية على جهازك.</span>
-                </div>
-              </div>
-
-              {/* Dynamic Electronic / InstaPay Payment Settings Card */}
-              <UpiSettingsSection
-                settings={settings}
-                onUpdateSettings={handleUpdateSettings}
-              />
-
-              {/* Fresh Start Store Deployment Card */}
-              <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-rose-200 dark:border-rose-900/60 shadow-xs space-y-3">
+                  {/* Fresh Start Store Deployment Card */}
+                  {/* <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-rose-200 dark:border-rose-900/60 shadow-xs space-y-3">
                 <h3 className="text-sm font-bold text-rose-700 dark:text-rose-400 flex items-center gap-2">
                   تهيئة النظام والبدء من جديد
                 </h3>
@@ -591,22 +685,30 @@ export default function App() {
                 <div className="flex gap-2 pt-1">
                   <button
                     type="button"
-                    onClick={() => setSettingsResetModal('clear')}
+                    onClick={() => {
+                      setSettingsMasterKey('');
+                      setSettingsResetError(null);
+                      setSettingsResetModal('clear');
+                    }}
                     className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
                   >
                     مسح البيانات التجريبية والبدء بمتجر فارغ
                   </button>
                   <button
                     type="button"
-                    onClick={() => setSettingsResetModal('sample')}
+                    onClick={() => {
+                      setSettingsMasterKey('');
+                      setSettingsResetError(null);
+                      setSettingsResetModal('sample');
+                    }}
                     className="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition cursor-pointer"
                   >
                     إعادة تحميل الأصناف والبيانات التجريبية
                   </button>
                 </div>
-              </div>
-            </div>
-          )}
+              </div> */}
+                </div>
+              )}
             </>
           ) : (
             <div role="alert" className="m-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-800">
@@ -630,31 +732,85 @@ export default function App() {
                 : 'هل أنت متأكد من رغبتك في إعادة تحميل البضاعة والبيانات التجريبية الافتراضية للسوبر ماركت (زيت، سكر، أرز، شاي العروسة، إلخ)؟'}
             </p>
 
+            <div className="space-y-2">
+              <label htmlFor="settings-reset-master-key" className="block text-xs font-semibold text-slate-700 dark:text-slate-200">
+                المفتاح الرئيسي
+              </label>
+              <input
+                id="settings-reset-master-key"
+                type="password"
+                value={settingsMasterKey}
+                onChange={event => {
+                  setSettingsMasterKey(event.target.value);
+                  setSettingsResetError(null);
+                }}
+                maxLength={256}
+                autoComplete="current-password"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-sm"
+                aria-invalid={Boolean(settingsResetError)}
+                aria-describedby={settingsResetError ? 'settings-reset-master-key-error' : undefined}
+              />
+              {settingsResetError && (
+                <p id="settings-reset-master-key-error" role="alert" className="text-xs text-rose-600 dark:text-rose-400">
+                  {settingsResetError}
+                </p>
+              )}
+            </div>
+
             <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
-                onClick={() => setSettingsResetModal(null)}
+                onClick={() => {
+                  setSettingsResetModal(null);
+                  setSettingsMasterKey('');
+                  setSettingsResetError(null);
+                }}
+                disabled={isVerifyingSettingsReset}
                 className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer"
               >
                 إلغاء
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  if (settingsResetModal === 'clear') {
-                    handleClearAllDataForFreshStart();
-                    setSettingsToast('تم مسح البيانات التجريبية بنجاح! يمكنك الآن بدء إدخال بضاعة محلك الفعلية.');
-                  } else {
-                    handleResetToSampleData();
-                    setSettingsToast('تمت استعادة الأصناف والبيانات التجريبية بنجاح.');
+                disabled={isVerifyingSettingsReset}
+                onClick={async () => {
+                  if (!settingsMasterKey) {
+                    setSettingsResetError('يرجى إدخال المفتاح الرئيسي.');
+                    return;
                   }
-                  setSettingsResetModal(null);
-                  setTimeout(() => setSettingsToast(null), 4000);
+
+                  setIsVerifyingSettingsReset(true);
+                  setSettingsResetError(null);
+                  try {
+                    const verification = settingsResetModal === 'clear'
+                      ? await handleAuthorizedClearAllData(settingsMasterKey)
+                      : await handleResetToSampleData(settingsMasterKey);
+                    if (!verification.configured) {
+                      setSettingsResetError('لم يتم إعداد مفتاح صالح. تحقق من ملف .env وتشغيل خادم Vite أو تطبيق Electron.');
+                      return;
+                    }
+                    if (!verification.authorized) {
+                      setSettingsResetError('المفتاح الرئيسي غير صحيح.');
+                      return;
+                    }
+
+                    setSettingsToast(settingsResetModal === 'clear'
+                      ? 'تم مسح البيانات التجريبية بنجاح! يمكنك الآن بدء إدخال بضاعة محلك الفعلية.'
+                      : 'تمت استعادة الأصناف والبيانات التجريبية بنجاح.');
+                    setSettingsResetModal(null);
+                    setSettingsMasterKey('');
+                    setTimeout(() => setSettingsToast(null), 4000);
+                  } catch (error) {
+                    const message = error instanceof Error ? error.message : String(error);
+                    setSettingsResetError(`تعذر إكمال العملية: ${message}`);
+                  } finally {
+                    setIsVerifyingSettingsReset(false);
+                  }
                 }}
                 className={`px-4 py-2 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer ${settingsResetModal === 'clear' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-slate-800 hover:bg-slate-900'
                   }`}
               >
-                {settingsResetModal === 'clear' ? 'نعم، مسح والبدء بنظام فارغ' : 'نعم، استرجاع البيانات التجريبية'}
+                {isVerifyingSettingsReset ? 'جارٍ التحقق...' : settingsResetModal === 'clear' ? 'نعم، مسح والبدء بنظام فارغ' : 'نعم، استرجاع البيانات التجريبية'}
               </button>
             </div>
           </div>
@@ -692,8 +848,7 @@ export default function App() {
       {/* First Time Setup Wizard Modal */}
       <FirstTimeSetupModal
         isOpen={!settings.isSetupCompleted}
-        onSave={handleUpdateSettings}
-        onClearAllData={handleClearAllDataForFreshStart}
+        onComplete={handleCompleteFirstTimeSetup}
         initialSettings={settings}
       />
 

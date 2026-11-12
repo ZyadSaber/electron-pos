@@ -74,12 +74,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span>شاشة الكاشير والبيع (F2)</span>
           </button>}
 
-          {canAccessTab(role, 'stock_in') && <button
-            onClick={() => onNavigate('stock_in')}
+          {canAccessTab(role, 'purchase_orders') && <button
+            onClick={() => onNavigate('purchase_orders')}
             className="px-3.5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-medium text-xs flex items-center gap-1.5 shadow-sm transition cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>استلام بضاعة للمخزن</span>
+            <span>أوامر الشراء واستلام الفواتير</span>
           </button>}
 
           {canAccessTab(role, 'products') && <button
@@ -386,7 +386,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         متبقي {product.quantity}
                       </div>
                       <button
-                        onClick={() => onNavigate('stock_in')}
+                        onClick={() => onNavigate('purchase_orders')}
                         className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline mt-0.5 block cursor-pointer"
                       >
                         إعادة طلب توريد

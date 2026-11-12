@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import { ShopSettings } from '../types';
-import { Store, User, MapPin, Phone, FileText, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
+import { Store, User, MapPin, Phone, FileText, CheckCircle2, ShieldCheck, Sparkles, KeyRound } from 'lucide-react';
 
 interface FirstTimeSetupModalProps {
   isOpen: boolean;
-  onSave: (settings: Partial<ShopSettings>) => void;
-  onClearAllData?: (settings: Partial<ShopSettings>) => void;
+  onComplete: (settings: Partial<ShopSettings>, rootPin: string, dataMode: 'clean' | 'sample') => void;
   initialSettings: ShopSettings;
 }
 
 export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
   isOpen,
-  onSave,
-  onClearAllData,
+  onComplete,
   initialSettings,
 }) => {
   const [dataMode, setDataMode] = useState<'clean' | 'sample'>('clean');
@@ -21,9 +19,10 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
     ownerName: initialSettings.ownerName || '',
     address: initialSettings.address || '',
     phone: initialSettings.phone || '',
+    rootPin: '1234',
     gstNumber: initialSettings.gstNumber || '',
-    invoicePrefix: initialSettings.invoicePrefix || 'INV',
-    currencySymbol: initialSettings.currencySymbol || '₹',
+    invoicePrefix: initialSettings.invoicePrefix || 'فاتورة',
+    currencySymbol: initialSettings.currencySymbol || 'ج.م',
     receiptType: initialSettings.receiptType || 'thermal',
   });
 
@@ -31,25 +30,21 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.shopName || !formData.phone) {
-      alert('Please fill in required shop name and phone number.');
+    if (!formData.shopName.trim() || !formData.phone.trim()) {
+      alert('يرجى إدخال اسم المتجر ورقم الهاتف.');
+      return;
+    }
+    if (!/^\d{4}$/.test(formData.rootPin)) {
+      alert('يجب أن يتكون رمز PIN للمالك من أربعة أرقام.');
       return;
     }
 
-    const settingsObj = {
-      ...formData,
-      isSetupCompleted: true,
-    };
-
-    if (dataMode === 'clean' && onClearAllData) {
-      onClearAllData(settingsObj);
-    } else {
-      onSave(settingsObj);
-    }
+    const { rootPin, ...settings } = formData;
+    onComplete({ ...settings, isSetupCompleted: true }, rootPin, dataMode);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 overflow-y-auto">
+    <div dir="rtl" className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 overflow-y-auto">
       <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-xl overflow-hidden animate-in fade-in zoom-in duration-200 my-auto">
         
         {/* Banner */}
@@ -59,8 +54,8 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
               <Store className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold">Welcome to Offline Grocery POS</h2>
-              <p className="text-xs text-emerald-100 mt-0.5">Set up your grocery shop profile to start managing stock and billing</p>
+              <h2 className="text-xl font-bold">مرحباً بك في نظام نقاط البيع</h2>
+              <p className="text-xs text-emerald-100 mt-0.5">أكمل إعداد بيانات متجرك للبدء في إدارة المخزون والمبيعات</p>
             </div>
           </div>
           <div className="absolute right-0 bottom-0 opacity-10 font-black text-8xl pointer-events-none select-none">
@@ -75,12 +70,12 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
                 <Store className="w-3.5 h-3.5 text-emerald-600" />
-                Shop Name *
+                اسم المتجر *
               </label>
               <input
                 type="text"
                 required
-                placeholder="e.g. Green Valley Supermarket"
+                placeholder="مثال: سوبر ماركت الوادي الأخضر"
                 value={formData.shopName}
                 onChange={e => setFormData({ ...formData, shopName: e.target.value })}
                 className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
@@ -90,12 +85,12 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
                 <User className="w-3.5 h-3.5 text-emerald-600" />
-                Owner Name *
+                اسم المالك *
               </label>
               <input
                 type="text"
                 required
-                placeholder="e.g. Ramesh Kumar"
+                placeholder="مثال: أحمد محمد"
                 value={formData.ownerName}
                 onChange={e => setFormData({ ...formData, ownerName: e.target.value })}
                 className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
@@ -105,12 +100,33 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
+              <KeyRound className="w-3.5 h-3.5 text-emerald-600" />
+              رمز PIN للمالك *
+            </label>
+            <input
+              type="password"
+              required
+              inputMode="numeric"
+              pattern="[0-9]{4}"
+              maxLength={4}
+              autoComplete="new-password"
+              value={formData.rootPin}
+              onChange={e => setFormData({ ...formData, rootPin: e.target.value.replace(/\D/g, '').slice(0, 4) })}
+              className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-sm tracking-widest focus:ring-2 focus:ring-emerald-500 outline-none"
+            />
+            <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+              سيتم إنشاء حساب المالك الأول بهذا الرمز. استخدم رقم هاتف المتجر ورمز PIN لتسجيل الدخول.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-              Shop Address
+              عنوان المتجر
             </label>
             <input
               type="text"
-              placeholder="e.g. Shop #14, Main Market Road, Bangalore"
+              placeholder="مثال: شارع السوق الرئيسي، القاهرة"
               value={formData.address}
               onChange={e => setFormData({ ...formData, address: e.target.value })}
               className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
@@ -121,12 +137,12 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
                 <Phone className="w-3.5 h-3.5 text-emerald-600" />
-                Phone Number *
+                رقم الهاتف *
               </label>
               <input
                 type="text"
                 required
-                placeholder="+91 98765 00000"
+                placeholder="01012345678"
                 value={formData.phone}
                 onChange={e => setFormData({ ...formData, phone: e.target.value })}
                 className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
@@ -136,7 +152,7 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
                 <FileText className="w-3.5 h-3.5 text-emerald-600" />
-                GST Number (Optional)
+                الرقم الضريبي (اختياري)
               </label>
               <input
                 type="text"
@@ -150,13 +166,13 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
 
           <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
             <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">
-              Invoice & Print Preferences
+              إعدادات الفواتير والطباعة
             </h4>
 
             <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                  Prefix
+                  بادئة رقم الفاتورة
                 </label>
                 <input
                   type="text"
@@ -168,7 +184,7 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
 
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                  Currency Symbol
+                  رمز العملة
                 </label>
                 <input
                   type="text"
@@ -180,15 +196,15 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
 
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                  Bill Format
+                  تنسيق الفاتورة
                 </label>
                 <select
                   value={formData.receiptType}
                   onChange={e => setFormData({ ...formData, receiptType: e.target.value as any })}
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-medium"
                 >
-                  <option value="thermal">Thermal (80mm)</option>
-                  <option value="a4">A4 Full Page</option>
+                  <option value="thermal">طابعة حرارية (80 مم)</option>
+                  <option value="a4">صفحة كاملة (A4)</option>
                 </select>
               </div>
             </div>
@@ -196,7 +212,7 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
 
           <div className="pt-2 border-t border-slate-200 dark:border-slate-700 space-y-2">
             <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-              Database Initialization Mode
+              طريقة تهيئة قاعدة البيانات
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label 
@@ -209,7 +225,7 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                     <Sparkles className="w-4 h-4 text-emerald-600" />
-                    Clean Slate (Fresh Start)
+                    بداية جديدة (بيانات فارغة)
                   </span>
                   <input
                     type="radio"
@@ -221,7 +237,7 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
                   />
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Recommended for real store owners. Starts with empty inventory so you can enter your own real products from scratch.
+                  الخيار المناسب للمتاجر الفعلية. يبدأ بمخزون فارغ لتتمكن من إدخال منتجاتك.
                 </p>
               </label>
 
@@ -235,7 +251,7 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                     <Store className="w-4 h-4 text-sky-600" />
-                    Pre-loaded Demo Data
+                    بيانات تجريبية جاهزة
                   </span>
                   <input
                     type="radio"
@@ -247,7 +263,7 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
                   />
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Pre-loads 15 sample grocery items (Atta, Oil, Pulses, Biscuits) for immediate feature testing & software demonstration.
+                  يحمّل 15 منتجاً تجريبياً مثل الدقيق والزيت والبقوليات والبسكويت لتجربة النظام.
                 </p>
               </label>
             </div>
@@ -256,8 +272,8 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
           <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 shrink-0 text-emerald-600" />
             <div>
-              <p className="font-semibold">Local SQLite Data Storage</p>
-              <p className="text-[11px] opacity-90">All invoices, product catalogs, and profits will be stored offline on this computer.</p>
+              <p className="font-semibold">تخزين محلي لبيانات المتجر</p>
+              <p className="text-[11px] opacity-90">تُحفظ الفواتير والمنتجات والأرباح محلياً على هذا الجهاز.</p>
             </div>
           </div>
 
@@ -267,7 +283,7 @@ export const FirstTimeSetupModal: React.FC<FirstTimeSetupModalProps> = ({
               className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-2xl shadow-lg hover:shadow-emerald-500/25 transition flex items-center justify-center gap-2 text-sm"
             >
               <CheckCircle2 className="w-5 h-5" />
-              Complete First Time Setup & Open POS
+              إكمال الإعداد وفتح نظام نقاط البيع
             </button>
           </div>
 

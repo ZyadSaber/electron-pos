@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Product, ShopSettings } from '../types';
-import { Barcode as BarcodeIcon, Printer, Sparkles, RefreshCw, Layers } from 'lucide-react';
+import { Barcode as BarcodeIcon, Printer } from 'lucide-react';
 import JsBarcode from 'jsbarcode';
 
 interface BarcodeGeneratorViewProps {
@@ -65,7 +65,7 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
   const [customBarcode, setCustomBarcode] = useState<string>('');
   const [customName, setCustomName] = useState<string>('');
   const [customPrice, setCustomPrice] = useState<string>('');
-  const [copies, setCopies] = useState<number>(12);
+  const [copies, setCopies] = useState<number>(1);
 
   const barcodeSvgRef = useRef<SVGSVGElement | null>(null);
   const currency = settings.currencySymbol || 'ج.م';
@@ -100,85 +100,7 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
   }, [displayBarcode, selectedProductId]);
 
   const handlePrintLabels = () => {
-    // Attempt standard browser print first
-    try {
-      window.print();
-    } catch (err) {
-      console.warn('Standard window.print failed, attempting popup print:', err);
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        const stickersHtml = Array.from({ length: copies }).map(() => `
-          <div style="
-            width: 58mm;
-            height: 38mm;
-            padding: 3mm;
-            border: 1px solid #000;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            text-align: center;
-            font-family: Arial, sans-serif;
-            background: #fff;
-            color: #000;
-            direction: rtl;
-            page-break-inside: avoid;
-          ">
-            <div style="font-size: 10px; font-weight: bold; text-transform: uppercase;">${settings.shopName || 'سوبر ماركت'}</div>
-            <div style="font-size: 11px; font-weight: 600; margin: 2px 0;">${displayName}</div>
-            <svg class="barcode-svg" data-code="${displayBarcode}"></svg>
-            <div style="font-size: 11px; font-weight: bold; font-family: monospace;">السعر: ${displayPrice} ${currency}</div>
-          </div>
-        `).join('');
-
-        printWindow.document.write(`
-          <!DOCTYPE html>
-          <html dir="rtl">
-            <head>
-              <title>طباعة ملصقات الباركود</title>
-              <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-              <style>
-                body { margin: 10mm; padding: 0; background: #fff; direction: rtl; }
-                .grid {
-                  display: grid;
-                  grid-template-columns: repeat(3, 1fr);
-                  gap: 5mm;
-                }
-                @media print {
-                  body { margin: 0; }
-                  .grid { gap: 3mm; }
-                }
-              </style>
-            </head>
-            <body>
-              <div class="grid">${stickersHtml}</div>
-              <script>
-                window.onload = function() {
-                  document.querySelectorAll('.barcode-svg').forEach(function(el) {
-                    try {
-                      JsBarcode(el, el.getAttribute('data-code'), {
-                        format: "CODE128",
-                        width: 1.4,
-                        height: 35,
-                        displayValue: true,
-                        fontSize: 10,
-                        margin: 2
-                      });
-                    } catch(e){}
-                  });
-                  setTimeout(function() {
-                    window.print();
-                    window.close();
-                  }, 300);
-                };
-              </script>
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-      }
-    }
+    window.print();
   };
 
   return (
@@ -189,10 +111,10 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <BarcodeIcon className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-            طباعة ملصقات واستيكرات الباركود والأسعار
+            طباعة ملصقات الباركود والأسعار
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            توليد وطباعة أوراق الباركود للأصناف والسلع بدون باركود مسبق أو للأرفف.
+            طباعة ملصق واحد للمنتج مع تحديد عدد النسخ المطلوبة.
           </p>
         </div>
 
@@ -201,7 +123,7 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
           className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md text-xs flex items-center gap-2 transition cursor-pointer"
         >
           <Printer className="w-4 h-4" />
-          <span>طباعة ورقة الاستيكرات ({copies} ملصق)</span>
+          <span>طباعة الملصق ({copies} نسخة)</span>
         </button>
       </div>
 
@@ -222,7 +144,7 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
               onChange={e => setSelectedProductId(e.target.value)}
               className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-medium outline-none"
             >
-              <option value="">-- إدخال باركود يدوي مخصص --</option>
+              <option value="">-- إدخال بيانات الملصق يدوياً --</option>
               {products.map(p => (
                 <option key={p.id} value={p.id}>
                   {p.name} ({p.sellingPrice} {currency} - باركود: {p.barcode})
@@ -277,23 +199,26 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              عدد الملصقات في الورقة الواحدة
+            <label htmlFor="barcode-label-copies" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              عدد النسخ
             </label>
-            <select
+            <input
+              id="barcode-label-copies"
+              type="number"
+              min={1}
+              max={500}
+              step={1}
               value={copies}
-              onChange={e => setCopies(parseInt(e.target.value))}
+              onChange={e => {
+                const count = Number.parseInt(e.target.value, 10);
+                setCopies(Number.isFinite(count) ? Math.min(500, Math.max(1, count)) : 1);
+              }}
               className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-medium"
-            >
-              <option value={6}>6 ملصقات بالورقة</option>
-              <option value={12}>12 ملصق بالورقة</option>
-              <option value={24}>24 ملصق بالورقة</option>
-              <option value={40}>40 ملصق بالورقة</option>
-            </select>
+            />
           </div>
 
           <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 text-center space-y-2">
-            <span className="text-xs text-slate-400 font-semibold uppercase">معاينة مباشرة لشكل الاستيكر</span>
+            <span className="text-xs text-slate-400 font-semibold">معاينة مباشرة لشكل الملصق</span>
             <div className="p-3 bg-white text-black rounded-lg border border-slate-300 max-w-[220px] mx-auto shadow-xs text-center font-sans">
               <p className="font-bold text-xs truncate">{settings.shopName}</p>
               <p className="text-[11px] font-semibold truncate leading-tight mt-0.5">{displayName}</p>
@@ -306,33 +231,43 @@ export const BarcodeGeneratorView: React.FC<BarcodeGeneratorViewProps> = ({
         </div>
 
         {/* Right Preview Sheet (7 Cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs">
+        <div className="no-print lg:col-span-7 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs">
           <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">
             <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">
-              تخطيط ورقة الملصقات للطباعة ({copies} استيكر)
+              معاينة ملصق واحد · {copies} نسخة للطباعة
             </h3>
-            <span className="text-xs text-slate-400">معاينة شبكة صفحة A4</span>
+            <span className="text-xs text-slate-400">ملصق 58 × 38 مم</span>
           </div>
 
-          <div className="printable-area p-4 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 min-h-[400px]">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {Array.from({ length: copies }).map((_, idx) => (
+          <div className="p-4 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 min-h-[220px] flex items-center justify-center">
+            <div className="max-w-[260px] w-full">
                 <StickerItem
-                  key={idx}
                   shopName={settings.shopName || 'سوبر ماركت'}
                   name={displayName}
                   barcode={displayBarcode}
                   price={displayPrice}
                   currency={currency}
                 />
-              ))}
             </div>
           </div>
         </div>
 
       </div>
 
+      <div className="barcode-print-area" aria-hidden="true">
+        {Array.from({ length: copies }).map((_, idx) => (
+          <div className="barcode-label-copy" key={idx}>
+            <StickerItem
+              shopName={settings.shopName || 'سوبر ماركت'}
+              name={displayName}
+              barcode={displayBarcode}
+              price={displayPrice}
+              currency={currency}
+            />
+          </div>
+        ))}
+      </div>
+
     </div>
   );
 };
-

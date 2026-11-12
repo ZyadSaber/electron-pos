@@ -22,3 +22,8 @@ Navigate to **Backup & Restore** in the left sidebar menu. Click **Export Comple
 
 ### Q5: How do I lock the terminal when stepping away?
 Click the **Store Owner / Lock** icon in the top header or press the lock button. Access requires entering your 4-digit Security PIN.
+
+---
+
+### Q6: How do I import products from an Excel file?
+Open **Products**, choose **Import from Excel**, and select an XLS, XLSX, or CSV file. Match each spreadsheet column to its product field, review the preview, and import the valid rows. Product name, purchase price, selling price, and quantity are required; missing barcodes are generated automatically.

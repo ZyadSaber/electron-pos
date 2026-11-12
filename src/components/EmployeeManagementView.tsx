@@ -66,7 +66,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = ({ 
 
   const roleLabels: Record<string, string> = {
     Owner: 'مالك المتجر (صلاحية كاملة)',
-    Manager: 'مدير فرع',
+    Manager: 'مدير',
     Cashier: 'كاشير (مبيعات فقط)',
     'Inventory Staff': 'أمين مخزن وبضاعة',
     Accountant: 'محاسب مالي',
@@ -266,7 +266,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = ({ 
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none"
                   >
                     <option value="Owner">مالك المتجر (صلاحية كاملة)</option>
-                    <option value="Manager">مدير فرع</option>
+                    <option value="Manager">مدير</option>
                     <option value="Cashier">كاشير (نقاط البيع والفواتير)</option>
                     <option value="Inventory Staff">مسؤول مخزن وتوريد</option>
                     <option value="Accountant">محاسب مالي</option>

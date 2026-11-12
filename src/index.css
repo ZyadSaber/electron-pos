@@ -22,6 +22,15 @@
 }
 
 /* Print specific styles for Receipts and Invoices */
+.barcode-print-area {
+  display: none;
+}
+
+@page barcode-label {
+  size: 58mm 38mm;
+  margin: 0;
+}
+
 @media print {
   body {
     background: #ffffff !important;
@@ -34,7 +43,7 @@
     visibility: hidden;
   }
 
-  .printable-area, .printable-area * {
+  .printable-area, .printable-area *, .barcode-print-area, .barcode-print-area * {
     visibility: visible !important;
   }
 
@@ -57,6 +66,38 @@
     z-index: 999999 !important;
     direction: rtl;
     text-align: right;
+  }
+
+  .barcode-print-area {
+    display: block !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 58mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    page: barcode-label;
+  }
+
+  .barcode-label-copy {
+    box-sizing: border-box !important;
+    width: 58mm !important;
+    height: 38mm !important;
+    margin: 0 !important;
+    padding: 2mm !important;
+    overflow: hidden !important;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .barcode-label-copy:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  .barcode-label-copy > div {
+    box-sizing: border-box !important;
+    height: 100% !important;
   }
 
   /* Reset overflow and fixed heights on parent modal containers during print */

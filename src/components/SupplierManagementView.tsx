@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Supplier, ShopSettings } from '../types';
+import { Product, Supplier, ShopSettings, SupplierLedgerEntry } from '../types';
 import { sqliteDB } from '../db/sqliteStorage';
 import { 
   Truck, 
@@ -13,7 +13,9 @@ import {
   Edit, 
   Trash2, 
   X,
-  CreditCard
+  CreditCard,
+  RotateCcw,
+  Wallet,
 } from 'lucide-react';
 
 interface SupplierManagementViewProps {
@@ -25,6 +27,14 @@ export const SupplierManagementView: React.FC<SupplierManagementViewProps> = ({ 
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Partial<Supplier> | null>(null);
+  const [accountSupplier, setAccountSupplier] = useState<Supplier | null>(null);
+  const [transactionSupplier, setTransactionSupplier] = useState<Supplier | null>(null);
+  const [transactionType, setTransactionType] = useState<'Payment' | 'Return'>('Payment');
+  const [transactionAmount, setTransactionAmount] = useState('');
+  const [transactionReference, setTransactionReference] = useState('');
+  const [transactionPaymentMode, setTransactionPaymentMode] = useState<'Cash' | 'UPI' | 'Bank' | 'Card'>('Cash');
+  const [returnProductId, setReturnProductId] = useState('');
+  const [returnQuantity, setReturnQuantity] = useState('1');
 
   const refreshSuppliers = () => {
     setSuppliers(sqliteDB.getSuppliers());
@@ -56,6 +66,56 @@ export const SupplierManagementView: React.FC<SupplierManagementViewProps> = ({ 
     sqliteDB.deleteSupplier(id);
     refreshSuppliers();
   };
+
+  const openTransaction = (supplier: Supplier, type: 'Payment' | 'Return') => {
+    setTransactionSupplier(supplier);
+    setTransactionType(type);
+    setTransactionAmount('');
+    setTransactionReference('');
+    setReturnProductId(sqliteDB.getProducts()[0]?.id || '');
+    setReturnQuantity('1');
+  };
+
+  const handleSaveTransaction = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!transactionSupplier) return;
+    try {
+      if (transactionType === 'Payment') {
+        sqliteDB.paySupplier(
+          transactionSupplier.id,
+          Number(transactionAmount),
+          transactionPaymentMode,
+          transactionReference.trim() || `PAY-${Date.now()}`,
+        );
+      } else {
+        sqliteDB.recordSupplierReturn(
+          transactionSupplier.id,
+          returnProductId,
+          Number(returnQuantity),
+          Number(transactionAmount),
+          transactionReference.trim(),
+        );
+      }
+      setTransactionSupplier(null);
+      refreshSuppliers();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'تعذر حفظ الحركة المالية.');
+    }
+  };
+
+  const getGroupedLedger = (supplierId: string): [string, SupplierLedgerEntry[]][] => {
+    const groups = new Map<string, SupplierLedgerEntry[]>();
+    sqliteDB.getSupplierLedger(supplierId).forEach(entry => {
+      const date = entry.date.slice(0, 10);
+      groups.set(date, [...(groups.get(date) || []), entry]);
+    });
+    return [...groups.entries()];
+  };
+
+  const products: Product[] = sqliteDB.getProducts();
+  const currentAccountSupplier = accountSupplier
+    ? sqliteDB.getSuppliers().find(supplier => supplier.id === accountSupplier.id) || accountSupplier
+    : null;
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
@@ -204,11 +264,23 @@ export const SupplierManagementView: React.FC<SupplierManagementViewProps> = ({ 
             <div className="pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs">
               <span className="text-[11px] font-medium text-slate-500">شروط السداد: {sup.paymentTerms}</span>
               <div className="text-left">
-                <span className="text-[10px] text-slate-400 block">المستحقات</span>
+                <span className="text-[10px] text-slate-400 block">{sup.outstandingBalance < 0 ? 'رصيد لنا' : 'المستحق للمورد'}</span>
                 <span className={`font-bold ${sup.outstandingBalance > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                   {sup.outstandingBalance.toLocaleString()} {settings.currencySymbol || 'ج.م'}
                 </span>
               </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2 pt-2">
+              <button onClick={() => setAccountSupplier(sup)} className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-bold">
+                كشف الحساب
+              </button>
+              <button onClick={() => openTransaction(sup, 'Payment')} className="px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-[10px] font-bold flex items-center gap-1">
+                <Wallet className="w-3 h-3" /> تسجيل سداد
+              </button>
+              <button onClick={() => openTransaction(sup, 'Return')} className="px-2.5 py-1.5 rounded-lg bg-amber-500 text-white text-[10px] font-bold flex items-center gap-1">
+                <RotateCcw className="w-3 h-3" /> مرتجع للمورد
+              </button>
             </div>
           </div>
         ))}
@@ -314,6 +386,100 @@ export const SupplierManagementView: React.FC<SupplierManagementViewProps> = ({ 
                   حفظ بيانات المورد
                 </button>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {currentAccountSupplier && (
+        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto p-6 space-y-4 shadow-xl">
+            <div className="flex items-start justify-between border-b pb-3">
+              <div>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100">كشف حساب {currentAccountSupplier.companyName}</h3>
+                <p className="text-xs text-slate-500">{currentAccountSupplier.name} · الرصيد الحالي: {currentAccountSupplier.outstandingBalance.toLocaleString()} {settings.currencySymbol || 'ج.م'}</p>
+              </div>
+              <button onClick={() => setAccountSupplier(null)} className="p-1 text-slate-400"><X className="w-5 h-5" /></button>
+            </div>
+            {!sqliteDB.getSupplierLedger(currentAccountSupplier.id).length ? (
+              <p className="text-center text-xs text-slate-400 py-8">لا توجد حركات مسجلة لهذا المورد.</p>
+            ) : (
+              <div className="space-y-4">
+                {getGroupedLedger(currentAccountSupplier.id).map(([date, entries]) => (
+                  <section key={date} className="space-y-2">
+                    <h4 className="text-xs font-bold text-slate-500">{new Date(`${date}T00:00:00`).toLocaleDateString('ar-EG')}</h4>
+                    <div className="overflow-x-auto border rounded-xl">
+                      <table className="w-full text-right text-xs">
+                        <thead className="bg-slate-50 dark:bg-slate-700/50">
+                          <tr><th className="p-2">الحركة / الفاتورة</th><th className="p-2">طريقة الدفع</th><th className="p-2">مدين</th><th className="p-2">دائن</th><th className="p-2">الرصيد التالي</th></tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          {entries.map(entry => (
+                            <tr key={entry.id}>
+                              <td className="p-2">{entry.type === 'Invoice' ? 'فاتورة مورد' : entry.type === 'Payment' ? 'سداد للمورد' : entry.type === 'Return' ? 'مرتجع للمورد' : 'تسوية'}<div className="text-[10px] text-slate-400">{entry.referenceNo}{entry.notes ? ` · ${entry.notes}` : ''}</div></td>
+                              <td className="p-2">{entry.paymentMode || '—'}</td>
+                              <td className="p-2 text-rose-600">{entry.debit ? `${entry.debit.toLocaleString()} ${settings.currencySymbol || 'ج.م'}` : '—'}</td>
+                              <td className="p-2 text-emerald-600">{entry.credit ? `${entry.credit.toLocaleString()} ${settings.currencySymbol || 'ج.م'}` : '—'}</td>
+                              <td className="p-2 font-bold">{entry.balance.toLocaleString()} {settings.currencySymbol || 'ج.م'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {transactionSupplier && (
+        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="font-bold">{transactionType === 'Payment' ? 'تسجيل سداد للمورد' : 'تسجيل مرتجع للمورد'}</h3>
+              <button onClick={() => setTransactionSupplier(null)} className="text-slate-400"><X className="w-5 h-5" /></button>
+            </div>
+            <p className="text-xs text-slate-500">{transactionSupplier.companyName} · الرصيد {transactionSupplier.outstandingBalance.toLocaleString()} {settings.currencySymbol || 'ج.م'}</p>
+            <form onSubmit={handleSaveTransaction} className="space-y-3 text-xs">
+              {transactionType === 'Return' && (
+                <>
+                  <label className="block">
+                    <span className="block mb-1 font-semibold">الصنف المرتجع</span>
+                    <select required value={returnProductId} onChange={event => setReturnProductId(event.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-slate-900">
+                      {products.map(product => <option key={product.id} value={product.id}>{product.name} (المخزون {product.quantity})</option>)}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="block mb-1 font-semibold">الكمية</span>
+                    <input type="number" min={1} step={1} required value={returnQuantity} onChange={event => setReturnQuantity(event.target.value)} className="w-full p-2 border rounded-lg" />
+                  </label>
+                  <label className="block">
+                    <span className="block mb-1 font-semibold">رقم الفاتورة أو مرجع المرتجع</span>
+                    <input value={transactionReference} onChange={event => setTransactionReference(event.target.value)} className="w-full p-2 border rounded-lg" />
+                  </label>
+                </>
+              )}
+              {transactionType === 'Payment' && (
+                <>
+                  <label className="block">
+                    <span className="block mb-1 font-semibold">رقم إيصال السداد (اختياري)</span>
+                    <input value={transactionReference} onChange={event => setTransactionReference(event.target.value)} className="w-full p-2 border rounded-lg" />
+                  </label>
+                  <label className="block">
+                    <span className="block mb-1 font-semibold">طريقة السداد</span>
+                    <select value={transactionPaymentMode} onChange={event => setTransactionPaymentMode(event.target.value as 'Cash' | 'UPI' | 'Bank' | 'Card')} className="w-full p-2 border rounded-lg bg-white dark:bg-slate-900">
+                      <option value="Cash">نقداً</option><option value="UPI">محفظة / تحويل فوري</option><option value="Bank">تحويل بنكي</option><option value="Card">بطاقة</option>
+                    </select>
+                  </label>
+                </>
+              )}
+              <label className="block">
+                <span className="block mb-1 font-semibold">{transactionType === 'Payment' ? 'المبلغ المدفوع' : 'قيمة المرتجع'}</span>
+                <input type="number" min="0.01" step="0.01" required value={transactionAmount} onChange={event => setTransactionAmount(event.target.value)} className="w-full p-2 border rounded-lg" />
+              </label>
+              <button type="submit" className="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold">حفظ الحركة</button>
             </form>
           </div>
         </div>

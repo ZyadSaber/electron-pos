@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Customer, ShopSettings, Sale } from '../types';
+import { Customer, CustomerLedgerEntry, ShopSettings } from '../types';
 import { sqliteDB } from '../db/sqliteStorage';
 import { 
   Users, 
@@ -39,6 +39,7 @@ export const CustomerManagementView: React.FC<CustomerManagementViewProps> = ({
   const [showDuesModal, setShowDuesModal] = useState<Customer | null>(null);
   const [payDuesAmount, setPayDuesAmount] = useState<number>(0);
   const [showHistoryModal, setShowHistoryModal] = useState<Customer | null>(null);
+  const [paymentMode, setPaymentMode] = useState<'Cash' | 'UPI' | 'Bank' | 'Card'>('Cash');
 
   const refreshCustomers = () => {
     setCustomers(sqliteDB.getCustomers());
@@ -78,14 +79,29 @@ export const CustomerManagementView: React.FC<CustomerManagementViewProps> = ({
     e.preventDefault();
     if (!showDuesModal || payDuesAmount <= 0) return;
 
-    sqliteDB.payCustomerDues(showDuesModal.id, payDuesAmount);
+    if (!sqliteDB.payCustomerDues(showDuesModal.id, payDuesAmount, paymentMode)) {
+      alert('تعذر تسجيل التحصيل. تحقق من المبلغ والرصيد الحالي.');
+      return;
+    }
     setShowDuesModal(null);
     setPayDuesAmount(0);
     refreshCustomers();
   };
 
-  const getCustomerSales = (phone: string): Sale[] => {
-    return sqliteDB.getSales().filter(s => s.customerPhone === phone);
+  const getGroupedLedger = (customerId: string): [string, CustomerLedgerEntry[]][] => {
+    const groups = new Map<string, CustomerLedgerEntry[]>();
+    sqliteDB.getCustomerLedger(customerId).forEach(entry => {
+      const date = entry.date.slice(0, 10);
+      groups.set(date, [...(groups.get(date) || []), entry]);
+    });
+    return [...groups.entries()];
+  };
+
+  const customerTagLabels: Record<Customer['tag'], string> = {
+    VIP: 'عميل مميز (VIP)',
+    Regular: 'زبون عادي',
+    Wholesale: 'جملة ونصف جملة',
+    Distributor: 'موزع',
   };
 
   return (
@@ -104,7 +120,7 @@ export const CustomerManagementView: React.FC<CustomerManagementViewProps> = ({
 
         <button
           onClick={() => {
-            setEditingCustomer({ tag: 'زبون عادي' });
+            setEditingCustomer({ tag: 'Regular' });
             setShowAddEditModal(true);
           }}
           className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition shadow-sm self-start md:self-auto cursor-pointer"
@@ -175,6 +191,12 @@ export const CustomerManagementView: React.FC<CustomerManagementViewProps> = ({
             className="w-full pr-9 pl-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
+        <div>
+          <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">طريقة التحصيل</label>
+          <select value={paymentMode} onChange={event => setPaymentMode(event.target.value as 'Cash' | 'UPI' | 'Bank' | 'Card')} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
+            <option value="Cash">نقداً</option><option value="UPI">محفظة / تحويل فوري</option><option value="Bank">تحويل بنكي</option><option value="Card">بطاقة</option>
+          </select>
+        </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
           {[
@@ -241,11 +263,11 @@ export const CustomerManagementView: React.FC<CustomerManagementViewProps> = ({
                     </td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        customer.tag?.includes('VIP') ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300' :
-                        customer.tag?.includes('جملة') || customer.tag === 'Wholesale' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300' :
+                        customer.tag === 'VIP' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300' :
+                        customer.tag === 'Wholesale' || customer.tag === 'Distributor' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300' :
                         'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
                       }`}>
-                        {customer.tag}
+                        {customerTagLabels[customer.tag] || customer.tag}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-left font-semibold text-slate-800 dark:text-slate-100">
@@ -370,13 +392,14 @@ export const CustomerManagementView: React.FC<CustomerManagementViewProps> = ({
                 <div>
                   <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">فئة العميل</label>
                   <select
-                    value={editingCustomer?.tag || 'زبون عادي'}
-                    onChange={e => setEditingCustomer(prev => ({ ...prev, tag: e.target.value as any }))}
+                    value={editingCustomer?.tag || 'Regular'}
+                    onChange={e => setEditingCustomer(prev => ({ ...prev, tag: e.target.value as Customer['tag'] }))}
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none"
                   >
-                    <option value="زبون عادي">زبون عادي</option>
-                    <option value="عميل مميز (VIP)">عميل مميز (VIP)</option>
-                    <option value="جملة ونصف جملة">جملة ونصف جملة</option>
+                    <option value="Regular">زبون عادي</option>
+                    <option value="VIP">عميل مميز (VIP)</option>
+                    <option value="Wholesale">جملة ونصف جملة</option>
+                    <option value="Distributor">موزع</option>
                   </select>
                 </div>
 
@@ -486,20 +509,32 @@ export const CustomerManagementView: React.FC<CustomerManagementViewProps> = ({
             </div>
 
             <div className="max-h-80 overflow-y-auto space-y-2 text-xs">
-              {getCustomerSales(showHistoryModal.phone).length === 0 ? (
-                <p className="text-center py-6 text-slate-400">لا توجد فواتير سابقة مسجلة لرقم الموبايل هذا.</p>
+              {sqliteDB.getCustomerLedger(showHistoryModal.id).length === 0 ? (
+                <p className="text-center py-6 text-slate-400">لا توجد حركات مالية مسجلة لهذا العميل.</p>
               ) : (
-                getCustomerSales(showHistoryModal.phone).map(sale => (
-                  <div key={sale.id} className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl flex items-center justify-between border border-slate-200 dark:border-slate-600">
-                    <div>
-                      <div className="font-semibold text-slate-800 dark:text-slate-100">{sale.invoiceNumber}</div>
-                      <div className="text-[10px] text-slate-400">{new Date(sale.dateTime).toLocaleString('ar-EG')} • {sale.paymentMode === 'Cash' ? 'كاش' : sale.paymentMode === 'UPI' ? 'إنستاباي' : sale.paymentMode === 'Card' ? 'بطاقة' : 'آجل'}</div>
-                    </div>
-                    <div className="text-left">
-                      <div className="font-bold text-emerald-600 dark:text-emerald-400">{sale.totalAmount} {settings.currencySymbol || 'ج.م'}</div>
-                      <div className="text-[10px] text-slate-500">{sale.items.length} صنف</div>
-                    </div>
-                  </div>
+                getGroupedLedger(showHistoryModal.id).map(([date, entries]) => (
+                  <section key={date} className="space-y-2">
+                    <h4 className="font-bold text-slate-500">{new Date(`${date}T00:00:00`).toLocaleDateString('ar-EG')}</h4>
+                    {entries.map(entry => (
+                      <div key={entry.id} className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600 space-y-2">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="font-semibold text-slate-800 dark:text-slate-100">
+                              {entry.type === 'SaleCredit' ? 'فاتورة بيع' : entry.type === 'PaymentReceived' ? 'تحصيل من العميل' : entry.type === 'Return' ? 'مرتجع / رد مبلغ' : 'تسوية حساب'}
+                            </div>
+                            <div className="text-[10px] text-slate-400">{entry.referenceNo}{entry.paymentMode ? ` · ${entry.paymentMode}` : ''}{entry.notes ? ` · ${entry.notes}` : ''}</div>
+                          </div>
+                          <div className="text-left text-[10px] shrink-0">
+                            {entry.debit > 0 && <div className="text-rose-600">على العميل: {entry.debit.toLocaleString()} {settings.currencySymbol || 'ج.م'}</div>}
+                            {entry.credit > 0 && <div className="text-emerald-600">تحصيل / مردود: {entry.credit.toLocaleString()} {settings.currencySymbol || 'ج.م'}</div>}
+                          </div>
+                        </div>
+                        <div className="text-[10px] font-bold text-slate-500 border-t border-slate-200 dark:border-slate-600 pt-1">
+                          الرصيد بعد الحركة: {entry.balance.toLocaleString()} {settings.currencySymbol || 'ج.م'}
+                        </div>
+                      </div>
+                    ))}
+                  </section>
                 ))
               )}
             </div>

@@ -1,35 +1,39 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Product, CartItem, ShopSettings, Sale } from '../types';
+import { Product, CartItem, ShopSettings, Sale, Customer } from '../types';
 import { UPIPaymentModal } from './UPIPaymentModal';
 import { UPIPaymentService } from '../services/paymentService';
 import { sqliteDB } from '../db/sqliteStorage';
 import { playPosSuccessBeep, playPosErrorBeep } from '../utils/sound';
-import { 
-  Barcode, 
-  Search, 
-  Plus, 
-  Minus, 
-  Trash2, 
-  Camera, 
-  Printer, 
-  User, 
-  Phone, 
-  CreditCard, 
-  Coins, 
-  QrCode, 
-  CheckCircle, 
+import {
+  Barcode,
+  Search,
+  Plus,
+  Minus,
+  Trash2,
+  Camera,
+  Printer,
+  User,
+  UserPlus,
+  Phone,
+  CreditCard,
+  Coins,
+  QrCode,
+  CheckCircle,
   RotateCcw,
   ShoppingBag,
   Sparkles,
   AlertCircle,
   Zap,
   Activity,
-  Keyboard
+  Keyboard,
+  X
 } from 'lucide-react';
 
 interface POSBillingViewProps {
   products: Product[];
+  customers: Customer[];
   settings: ShopSettings;
+  onSaveCustomer: (customerData: { name: string; phone: string }) => Customer;
   onRecordSale: (
     cartItems: CartItem[],
     customerName: string,
@@ -37,7 +41,8 @@ interface POSBillingViewProps {
     paymentMode: 'Cash' | 'UPI' | 'Card' | 'Credit',
     receivedAmount: number,
     discountAmount: number,
-    taxPercent: number
+    taxPercent: number,
+    customerId?: string
   ) => Sale;
   onOpenCameraScanner: () => void;
   scannedBarcode: string | null;
@@ -46,7 +51,9 @@ interface POSBillingViewProps {
 
 export const POSBillingView: React.FC<POSBillingViewProps> = ({
   products,
+  customers,
   settings,
+  onSaveCustomer,
   onRecordSale,
   onOpenCameraScanner,
   scannedBarcode,
@@ -55,11 +62,16 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  
+
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [selectedCustomerId, setSelectedCustomerId] = useState('');
+  const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
+  const [newCustomerName, setNewCustomerName] = useState('');
+  const [newCustomerPhone, setNewCustomerPhone] = useState('');
+  const [customerFormError, setCustomerFormError] = useState('');
   const [paymentMode, setPaymentMode] = useState<'Cash' | 'UPI' | 'Card' | 'Credit'>('Cash');
-  
+
   const [discountInput, setDiscountInput] = useState<number>(0);
   const [taxPercentInput, setTaxPercentInput] = useState<number>(settings.defaultTaxPercent || 0);
   const [receivedAmountInput, setReceivedAmountInput] = useState<string>('');
@@ -73,6 +85,7 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
   const lastScannedTimeRef = useRef<{ code: string; time: number }>({ code: '', time: 0 });
 
   const currency = settings.currencySymbol || 'ج.م';
+  const selectedCustomer = customers.find(customer => customer.id === selectedCustomerId);
 
   // Categories list
   const categories = ['الكل', ...Array.from(new Set(products.map(p => p.category)))];
@@ -124,7 +137,7 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
 
       // Auto focus barcode input if typing numbers or scanning barcode
       if (
-        document.activeElement?.tagName !== 'INPUT' && 
+        document.activeElement?.tagName !== 'INPUT' &&
         document.activeElement?.tagName !== 'SELECT' &&
         document.activeElement?.tagName !== 'TEXTAREA'
       ) {
@@ -134,7 +147,7 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [cart, customerName, customerPhone, paymentMode, receivedAmountInput, discountInput, taxPercentInput]);
+  }, [cart, customerName, customerPhone, selectedCustomerId, paymentMode, receivedAmountInput, discountInput, taxPercentInput]);
 
   // Handle external camera scanned barcode
   useEffect(() => {
@@ -268,10 +281,56 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
   const receivedNum = parseFloat(receivedAmountInput) || 0;
   const changeDue = Math.max(0, receivedNum - grandTotal);
 
+  const handleCustomerSelection = (value: string) => {
+    if (value === 'add-customer') {
+      setNewCustomerName('');
+      setNewCustomerPhone('');
+      setCustomerFormError('');
+      setIsAddCustomerOpen(true);
+      return;
+    }
+
+    setSelectedCustomerId(value);
+    const customer = customers.find(item => item.id === value);
+    setCustomerName(customer?.name || '');
+    setCustomerPhone(customer?.phone || '');
+  };
+
+  const handleAddCustomer = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const name = newCustomerName.trim();
+    const phone = newCustomerPhone.trim();
+    const normalizedPhone = phone.replace(/\D/g, '');
+
+    if (!name || normalizedPhone.length < 7) {
+      setCustomerFormError('يرجى إدخال اسم العميل ورقم هاتف صحيح.');
+      return;
+    }
+
+    const existingCustomer = customers.find(
+      customer => customer.phone.replace(/\D/g, '') === normalizedPhone,
+    );
+    if (existingCustomer) {
+      setCustomerFormError('هذا الرقم مسجل بالفعل لعميل موجود. اختره من القائمة.');
+      return;
+    }
+
+    const customer = onSaveCustomer({ name, phone });
+    setSelectedCustomerId(customer.id);
+    setCustomerName(customer.name);
+    setCustomerPhone(customer.phone);
+    setIsAddCustomerOpen(false);
+  };
+
   // Complete Sale
   const handleCheckout = () => {
     if (cart.length === 0) {
       alert('السلة فارغة! قم بمسح الباركود أو اختيار المنتجات لإتمام الفاتورة.');
+      return;
+    }
+
+    if (paymentMode === 'Credit' && !selectedCustomerId) {
+      alert('اختر عميلاً مسجلاً أو أضف عميلاً جديداً لتسجيل الفاتورة كآجل.');
       return;
     }
 
@@ -291,40 +350,63 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
       return;
     }
 
-    onRecordSale(
-      cart,
-      customerName,
-      customerPhone,
-      paymentMode,
-      receivedNum > 0 ? receivedNum : grandTotal,
-      discountInput,
-      taxPercentInput
-    );
+    try {
+      onRecordSale(
+        cart,
+        customerName,
+        customerPhone,
+        paymentMode,
+        paymentMode === 'Credit' ? 0 : (receivedNum > 0 ? receivedNum : grandTotal),
+        discountInput,
+        taxPercentInput,
+        selectedCustomerId || undefined
+      );
+    } catch (error) {
+      console.error('Failed to save POS sale', error);
+      showToast(
+        'error',
+        error instanceof Error ? `تعذر حفظ الفاتورة: ${error.message}` : 'تعذر حفظ الفاتورة. يرجى المحاولة مرة أخرى.',
+      );
+      return;
+    }
 
     // Reset Form
     setCart([]);
     setCustomerName('');
     setCustomerPhone('');
+    setSelectedCustomerId('');
     setReceivedAmountInput('');
     setDiscountInput(0);
     setSearchQuery('');
   };
 
   const finalizeUpiSale = () => {
-    onRecordSale(
-      cart,
-      customerName,
-      customerPhone,
-      'UPI',
-      grandTotal,
-      discountInput,
-      taxPercentInput
-    );
+    try {
+      onRecordSale(
+        cart,
+        customerName,
+        customerPhone,
+        'UPI',
+        grandTotal,
+        discountInput,
+        taxPercentInput,
+        selectedCustomerId || undefined
+      );
+    } catch (error) {
+      console.error('Failed to save UPI sale', error);
+      setIsUpiModalOpen(false);
+      showToast(
+        'error',
+        error instanceof Error ? `تعذر حفظ الفاتورة: ${error.message}` : 'تعذر حفظ الفاتورة. يرجى المحاولة مرة أخرى.',
+      );
+      return;
+    }
 
     setIsUpiModalOpen(false);
     setCart([]);
     setCustomerName('');
     setCustomerPhone('');
+    setSelectedCustomerId('');
     setReceivedAmountInput('');
     setDiscountInput(0);
     setSearchQuery('');
@@ -333,7 +415,7 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
   // Filtered Products for quick grid
   const filteredProducts = products.filter(p => {
     const matchesCategory = selectedCategory === 'All' || selectedCategory === 'الكل' || p.category === selectedCategory;
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch = searchQuery === '' ||
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.barcode.includes(searchQuery) ||
       p.category.toLowerCase().includes(searchQuery.toLowerCase());
@@ -342,14 +424,13 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
 
   return (
     <div className="p-4 h-[calc(100vh-3.5rem)] flex flex-col md:flex-row gap-4 overflow-hidden relative">
-      
+
       {/* Toast Popup Notification */}
       {toastMessage && (
-        <div className={`absolute top-6 left-6 z-50 px-4 py-2.5 rounded-xl shadow-xl text-xs font-bold flex items-center gap-2 animate-in slide-in-from-top-2 duration-200 border ${
-          toastMessage.type === 'success'
-            ? 'bg-emerald-950 text-emerald-200 border-emerald-700/80 shadow-emerald-950/40'
-            : 'bg-rose-950 text-rose-200 border-rose-700/80 shadow-rose-950/40'
-        }`}>
+        <div className={`absolute top-6 left-6 z-50 px-4 py-2.5 rounded-xl shadow-xl text-xs font-bold flex items-center gap-2 animate-in slide-in-from-top-2 duration-200 border ${toastMessage.type === 'success'
+          ? 'bg-emerald-950 text-emerald-200 border-emerald-700/80 shadow-emerald-950/40'
+          : 'bg-rose-950 text-rose-200 border-rose-700/80 shadow-rose-950/40'
+          }`}>
           {toastMessage.type === 'success' ? (
             <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
           ) : (
@@ -361,28 +442,18 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
 
       {/* Left/Main Column: Product Search, Category Filters & Fast Product Grid */}
       <div className="flex-1 flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs overflow-hidden">
-        
+
         {/* Top Search & Barcode Bar */}
         <div className="p-3.5 border-b border-slate-200 dark:border-slate-700 space-y-2.5 bg-slate-50/50 dark:bg-slate-800/80">
-          
+
           {/* Scanner Status Indicator Header */}
           <div className="flex items-center justify-between text-[11px] border-b border-slate-200/60 dark:border-slate-700/60 pb-2">
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-full font-bold border border-emerald-500/30">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                🟢 قارئ الباركود USB متصل وجاهز
-              </span>
-              <span className="hidden lg:inline text-slate-400">
-                تركيز تلقائي دائم • استجابة فورية
-              </span>
-            </div>
 
             {/* Keyboard Shortcuts Legend */}
             <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[10px]">
               <Keyboard className="w-3.5 h-3.5 text-slate-400" />
               <span className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 rounded font-bold">F2: إنهاء الفاتورة</span>
               <span className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 rounded font-bold">F3: بحث وباركود</span>
-              <span className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 rounded font-bold">F4: مسح بالكاميرا</span>
             </div>
           </div>
 
@@ -428,11 +499,10 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
               <button
                 key={cat}
                 onClick={() => { setSelectedCategory(cat); focusBarcodeInput(); }}
-                className={`px-3 py-1 rounded-xl text-xs font-medium whitespace-nowrap transition cursor-pointer ${
-                  selectedCategory === cat
-                    ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold shadow-xs'
-                    : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600'
-                }`}
+                className={`px-3 py-1 rounded-xl text-xs font-medium whitespace-nowrap transition cursor-pointer ${selectedCategory === cat
+                  ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold shadow-xs'
+                  : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600'
+                  }`}
               >
                 {cat}
               </button>
@@ -458,11 +528,10 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
                   key={product.id}
                   onClick={() => addToCart(product)}
                   disabled={isOut}
-                  className={`p-3 rounded-xl border text-right flex flex-col justify-between transition relative group ${
-                    isOut
-                      ? 'bg-slate-100 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 opacity-60 cursor-not-allowed'
-                      : 'bg-white dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 hover:shadow-md cursor-pointer'
-                  }`}
+                  className={`p-3 rounded-xl border text-right flex flex-col justify-between transition relative group ${isOut
+                    ? 'bg-slate-100 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 opacity-60 cursor-not-allowed'
+                    : 'bg-white dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 hover:shadow-md cursor-pointer'
+                    }`}
                 >
                   <div>
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
@@ -478,13 +547,12 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
                       {product.sellingPrice} {currency}
                     </span>
 
-                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
-                      isOut
-                        ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
-                        : isLow
+                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${isOut
+                      ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                      : isLow
                         ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                         : 'text-slate-500 dark:text-slate-400'
-                    }`}>
+                      }`}>
                       {isOut ? 'نفد المخزون' : `${product.quantity} ${product.unit || 'قطعة'}`}
                     </span>
                   </div>
@@ -498,7 +566,7 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
 
       {/* Right Column: Active Cart Terminal & Checkout */}
       <div className="w-full md:w-[420px] lg:w-[460px] shrink-0 flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs overflow-hidden">
-        
+
         {/* Cart Header */}
         <div className="p-3.5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800">
           <div className="flex items-center gap-2">
@@ -521,29 +589,34 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
 
         {/* Customer Info Inputs */}
         <div className="p-3 bg-slate-100/50 dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-700 grid grid-cols-2 gap-2 text-xs">
-          <div>
+          <div className="col-span-2">
             <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-0.5">
-              اسم العميل (اختياري)
+              العميل (اختياري)
             </label>
-            <input
-              type="text"
-              placeholder="عميل نقدي / عام"
-              value={customerName}
-              onChange={e => setCustomerName(e.target.value)}
+            <select
+              value={selectedCustomerId}
+              onChange={event => handleCustomerSelection(event.target.value)}
               className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-0.5">
-              رقم الموبايل
-            </label>
-            <input
-              type="text"
-              placeholder="01xxxxxxxxx"
-              value={customerPhone}
-              onChange={e => setCustomerPhone(e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg outline-none"
-            />
+            >
+              <option value="">عميل نقدي / بدون تسجيل</option>
+              {customers.map(customer => (
+                <option key={customer.id} value={customer.id}>
+                  {customer.name} · {customer.phone}
+                  {customer.outstandingDues > 0 ? ` · عليه ${customer.outstandingDues} ${currency}` : ''}
+                </option>
+              ))}
+              <option value="add-customer">＋ إضافة عميل جديد</option>
+            </select>
+            {selectedCustomer && (
+              <div className="mt-1 flex justify-between text-[10px] text-slate-500 dark:text-slate-400">
+                <span>رقم الهاتف: {selectedCustomer.phone}</span>
+                {selectedCustomer.outstandingDues > 0 && (
+                  <span className="font-semibold text-amber-700 dark:text-amber-400">
+                    مديونية سابقة: {selectedCustomer.outstandingDues} {currency}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -602,7 +675,7 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
 
         {/* Pricing Summary & Checkout Panel */}
         <div className="p-4 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-700 space-y-3">
-          
+
           {/* Subtotal, Tax, Discount inputs */}
           <div className="space-y-1.5 text-xs">
             <div className="flex justify-between text-slate-600 dark:text-slate-400">
@@ -649,11 +722,10 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
               <button
                 key={mode.id}
                 onClick={() => setPaymentMode(mode.id as any)}
-                className={`py-1.5 px-1 rounded-xl text-[11px] font-bold border transition cursor-pointer text-center ${
-                  paymentMode === mode.id
-                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100'
-                }`}
+                className={`py-1.5 px-1 rounded-xl text-[11px] font-bold border transition cursor-pointer text-center ${paymentMode === mode.id
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100'
+                  }`}
               >
                 {mode.label}
               </button>
@@ -689,11 +761,10 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
           <button
             onClick={handleCheckout}
             disabled={cart.length === 0}
-            className={`w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition cursor-pointer ${
-              cart.length === 0
-                ? 'bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed shadow-none'
-                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20 active:scale-[0.99]'
-            }`}
+            className={`w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition cursor-pointer ${cart.length === 0
+              ? 'bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed shadow-none'
+              : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20 active:scale-[0.99]'
+              }`}
           >
             <CheckCircle className="w-5 h-5" />
             <span>حفظ وطباعة الفاتورة (F2)</span>
@@ -704,6 +775,76 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({
       </div>
 
       {/* Dynamic Electronic / InstaPay Payment Modal */}
+      {isAddCustomerOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4">
+          <form
+            onSubmit={handleAddCustomer}
+            className="w-full max-w-md space-y-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-2xl"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-100">
+                <UserPlus className="h-5 w-5 text-emerald-600" />
+                إضافة عميل إلى قاعدة العملاء
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsAddCustomerOpen(false)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                aria-label="إغلاق"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              سيتم حفظ العميل في قاعدة العملاء العامة وربطه بالفاتورة والرصيد الآجل.
+            </p>
+            <div>
+              <label htmlFor="pos-new-customer-name" className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                اسم العميل *
+              </label>
+              <input
+                id="pos-new-customer-name"
+                autoFocus
+                required
+                value={newCustomerName}
+                onChange={event => setNewCustomerName(event.target.value)}
+                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-900"
+              />
+            </div>
+            <div>
+              <label htmlFor="pos-new-customer-phone" className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                رقم الهاتف *
+              </label>
+              <input
+                id="pos-new-customer-phone"
+                type="tel"
+                inputMode="tel"
+                required
+                value={newCustomerPhone}
+                onChange={event => setNewCustomerPhone(event.target.value)}
+                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-900"
+              />
+            </div>
+            {customerFormError && <p role="alert" className="text-xs font-medium text-rose-600">{customerFormError}</p>}
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setIsAddCustomerOpen(false)}
+                className="rounded-xl bg-slate-100 px-4 py-2.5 text-xs font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+              >
+                إلغاء
+              </button>
+              <button
+                type="submit"
+                className="rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-emerald-700"
+              >
+                حفظ واختيار العميل
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
       <UPIPaymentModal
         isOpen={isUpiModalOpen}
         onClose={() => setIsUpiModalOpen(false)}
