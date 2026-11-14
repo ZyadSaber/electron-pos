@@ -1,6 +1,6 @@
 {
-  "name": "Offline Grocery POS & Inventory",
-  "description": "Desktop POS, Inventory, Billing, and Stock Management System for Grocery Shops",
-  "requestFramePermissions": ["camera"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "name": "نظام إدارة العاملين",
+  "description": "تطبيق مكتبي عربي لإدارة بيانات العاملين والإجازات والتنقلات",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
 }

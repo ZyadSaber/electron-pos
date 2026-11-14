@@ -1,60 +1,33 @@
-# How to Build Windows Installer (.exe) for Grocery POS
+# تطبيق إدارة العاملين على Windows
 
-This application is fully prepared for Desktop Electron packaging into a standalone Windows `.exe` installer.
+يستخدم التطبيق Electron وقاعدة SQLite المدمجة في Node.js، ويحفظ الملف `workers.sqlite` داخل مجلد بيانات التطبيق. لا يحتاج إلى تثبيت خادم قاعدة بيانات منفصل.
 
-## Prerequisites
-1. Node.js (v18+) installed on your PC.
-2. Windows environment (or Wine on Linux/Mac).
+تُحفظ بيانات تسجيل الدخول في جدول `users` المرتبط بجدول `workers`؛ استيراد العاملين لا ينشئ حسابات دخول. عند ترقية قاعدة بيانات سابقة، تُرحّل حسابات المسؤولين وتُحذف حقول كلمات المرور القديمة من جدول العاملين.
 
-## Packaging Steps
+## المتطلبات
 
-### Step 1: Install electron & electron-builder
-Run the following in your terminal:
-```bash
-npm install --save-dev electron electron-builder
+- Windows 10 أو أحدث
+- Node.js 18 أو أحدث
+- تثبيت اعتماديات المشروع باستخدام `npm install`
+
+## التشغيل
+
+ابدأ خادم Vite في نافذة طرفية:
+
+```powershell
+npm run dev
 ```
 
-### Step 2: Add Electron scripts to package.json
-In `package.json`, ensure the following scripts & builder config are added:
+وفي نافذة أخرى شغّل:
 
-```json
-{
-  "main": "electron/main.js",
-  "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build",
-    "electron:dev": "NODE_ENV=development electron .",
-    "electron:build": "npm run build && electron-builder --win nsis"
-  },
-  "build": {
-    "appId": "com.grocerypos.offline",
-    "productName": "Grocery POS & Inventory Software",
-    "files": [
-      "dist/**/*",
-      "electron/**/*"
-    ],
-    "win": {
-      "target": "nsis",
-      "icon": "public/favicon.ico"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
-    }
-  }
-}
+```powershell
+npm run electron:dev
 ```
 
-### Step 3: Generate the Windows .exe Installer
-Run:
-```bash
+## إنشاء ملف التثبيت
+
+```powershell
 npm run electron:build
 ```
 
-### Output
-The compiled Windows setup file will be placed in the `dist_electron/` directory:
-- `Grocery POS & Inventory Software Setup.exe`
-
-Double click the `.exe` file on any Windows PC to install the software completely offline!
+يوضع ملف تثبيت Windows في مجلد `release/`.

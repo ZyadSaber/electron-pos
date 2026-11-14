@@ -2,7 +2,7 @@
   "name": "grocery-pos-desktop",
   "private": true,
   "version": "1.0.0",
-  "description": "Grocery POS & Inventory Management Software",
+  "description": "Arabic desktop application for managing soldier records and service history",
   "author": "Your Name or Organization",
   "main": "electron/main.js",
   "type": "module",
@@ -12,13 +12,16 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js release",
     "lint": "tsc --noEmit",
-    "electron:dev": "electron .",
+    "electron:dev": "set NODE_ENV=development&& electron .",
+    "electron:dev:browser": "set NODE_ENV=development&& electron . --serve-web",
+    "browser:server": "set NODE_ENV=production&& electron . --browser-server",
+    "database:clean": "electron scripts/clean-database.js",
     "electron:build": "vite build && electron-builder",
     "electron:pack": "electron-builder --dir"
   },
   "build": {
     "appId": "com.localbusiness.grocerypos",
-    "productName": "Grocery POS & Inventory Software",
+    "productName": "نظام إدارة المجندين",
     "copyright": "Copyright © 2026 Your Name or Organization",
     "directories": {
       "output": "release"
@@ -26,12 +29,6 @@
     "files": [
       "dist/**/*",
       "electron/**/*"
-    ],
-    "extraResources": [
-      {
-        "from": ".env",
-        "to": ".env"
-      }
     ],
     "extraMetadata": {
       "main": "electron/main.js"
@@ -52,8 +49,8 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Grocery POS & Inventory Software",
-      "uninstallDisplayName": "Grocery POS & Inventory Software"
+      "shortcutName": "نظام إدارة المجندين",
+      "uninstallDisplayName": "نظام إدارة المجندين"
     }
   },
   "dependencies": {

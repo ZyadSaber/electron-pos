@@ -1,453 +1,221 @@
-/**
- * Types for Offline Grocery Shop Management Software (Enterprise POS)
- */
-
-export interface ShopSettings {
-  shopName: string;
-  ownerName: string;
-  address: string;
-  phone: string;
-  gstNumber?: string;
-  invoicePrefix: string;
-  currencySymbol: string;
-  defaultTaxPercent: number; // e.g. 0, 5, 12, 18
-  lowStockThreshold: number; // e.g. 10
-  receiptType: 'thermal' | 'a4';
-  receiptSize?: '58mm' | '80mm' | 'a4';
-  receiptTemplate?: 'thermal' | 'a4' | 'compact' | 'modern' | 'minimal';
-  footerMessage?: string;
-  returnPolicyText?: string;
-  qrCodeText?: string;
-  decimalPrecision?: number; // 2, 3
-  dateFormat?: string; // YYYY-MM-DD, DD/MM/YYYY
-  timeFormat?: '12h' | '24h';
-  language?: string;
-  selectedPrinter?: string;
-  enableCameraScanner: boolean;
-  theme: 'light' | 'dark';
-  isSetupCompleted: boolean;
-  backupFrequency?: 'daily' | 'weekly' | 'monthly';
-  lastBackupDate?: string;
-  requireManagerPinForDiscount?: boolean;
-  discountThresholdPercent?: number;
-  enableLoyalty?: boolean;
-  loyaltyPointRatio?: number; // 1 point per X currency spent
-  pinnedProductIds?: string[];
-  pinnedReportIds?: string[];
-
-  // UPI Payment Settings
-  enableUpiPayments?: boolean;
-  merchantName?: string;
-  upiId?: string;
-  defaultPaymentNote?: string;
-  upiReceiptFooter?: string;
-  merchantLogo?: string;
-}
-
-export interface ProductBatch {
-  id: string;
-  batchNumber: string;
-  mfgDate?: string;
-  expiryDate: string;
-  quantity: number;
-  purchasePrice: number;
-  sellingPrice?: number;
-  supplierBatchRef?: string;
-}
-
-export interface ProductVariant {
-  id: string;
-  name: string; // e.g., "1kg", "5kg", "500ml", "1L"
-  barcode: string;
-  sellingPrice: number;
-  purchasePrice: number;
-  quantity: number;
-}
-
-export interface ComboItem {
-  productId: string;
-  productName: string;
-  qty: number;
-}
-
-export interface UnitConversion {
-  fromUnit: string;
-  toUnit: string;
-  factor: number;
-}
-
-export interface Product {
-  id: string;
-  name: string;
-  category: string;
-  parentCategoryId?: string;
-  barcode: string;
-  purchasePrice: number;
-  sellingPrice: number;
-  wholesalePrice?: number;
-  distributorPrice?: number;
-  vipPrice?: number;
-  quantity: number;
-  supplierName: string;
-  expiryDate?: string; // YYYY-MM-DD
-  mfgDate?: string;
-  batchNumber?: string;
-  batches?: ProductBatch[];
-  unit?: string; // kg, g, l, ml, pcs, packet, box, bag, sack
-  minStockLevel?: number;
-  maxStockLevel?: number;
-  shelfLocation?: string; // e.g. "Rack A - Row 2"
-  imageUrl?: string;
-  isCombo?: boolean;
-  comboItems?: ComboItem[];
-  variants?: ProductVariant[];
-  isPinned?: boolean;
+export interface Soldier {
+  militaryNumber: string;
+  rank: string;
+  fullName: string;
+  company: string;
+  subLocation: string;
+  nationalId: string;
+  tripleNumber: string;
+  joinDate: string;
+  dischargeDate: string;
+  enlistmentDate: string;
+  governorate: string;
+  district: string;
+  religion: string;
+  trainingCenter: string;
+  weapon: string;
+  phone?: string;
+  monthlyStatus?: string;
+  notes?: string;
+  isAdmin: boolean;
+  mustChangePassword: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface CartItem {
-  product: Product;
-  quantity: number;
-  discountPercent?: number;
-  discountAmount?: number;
-  unitSellingPrice: number;
-  totalPrice: number;
-  selectedVariant?: ProductVariant;
-  selectedBatchId?: string;
-  batchNumber?: string;
-  selectedUnit?: string;
+export type Worker = Soldier;
+
+export type SoldierDetails = Omit<
+  Soldier,
+  'isAdmin' | 'mustChangePassword' | 'createdAt' | 'updatedAt' | 'phone' | 'monthlyStatus' | 'notes'
+>;
+
+export type WorkerDetails = SoldierDetails;
+
+export type WorkerBasicCategory =
+  | 'company'
+  | 'subLocation'
+  | 'governorate'
+  | 'trainingCenter'
+  | 'rank'
+  | 'weapon'
+  | 'leaveType';
+
+export interface WorkerBasicDefinition {
+  category: WorkerBasicCategory;
+  value: string;
+  company?: string;
 }
 
-export interface SaleItem {
-  id: string;
-  productId: string;
-  productName: string;
-  barcode: string;
-  unitPurchasePrice: number;
-  unitSellingPrice: number;
-  quantity: number;
-  totalPrice: number;
-  variantName?: string;
-  batchNumber?: string;
-  unit?: string;
-}
-
-export interface SplitPayment {
-  mode: 'Cash' | 'UPI' | 'Card' | 'Wallet' | 'Gift Voucher' | 'Store Credit';
-  amount: number;
-}
-
-export interface Sale {
-  id: string;
-  invoiceNumber: string;
-  dateTime: string; // ISO string
-  customerId?: string;
-  customerName?: string;
-  customerPhone?: string;
-  items: SaleItem[];
-  subtotal: number;
-  taxAmount: number;
-  taxPercent: number;
-  discountAmount: number;
-  discountType?: 'flat' | 'percent' | 'loyalty' | 'coupon' | 'wholesale';
-  totalAmount: number;
-  receivedAmount: number;
-  changeAmount: number;
-  paymentMode: 'Cash' | 'UPI' | 'Card' | 'Credit' | 'Split';
-  splitPayments?: SplitPayment[];
-  totalProfit: number;
-  status: 'Completed' | 'Cancelled' | 'Refunded' | 'Partially Refunded';
-  notes?: string;
-  cashierName?: string;
-  cashierId?: string;
-  shiftId?: string;
-  merchantUpiId?: string;
-  paymentNote?: string;
-  paymentStatus?: 'Paid' | 'Pending';
-}
-
-export interface HeldBill {
-  id: string;
-  customerName: string;
-  customerPhone: string;
-  cartItems: CartItem[];
-  timestamp: string;
-  note?: string;
-  cashierName?: string;
-}
-
-export interface CustomerLedgerEntry {
-  id: string;
-  customerId: string;
-  date: string;
-  type: 'SaleCredit' | 'PaymentReceived' | 'Return' | 'Adjustment';
-  referenceNo: string;
-  debit: number;
-  credit: number;
-  balance: number;
-  notes?: string;
-  paymentMode?: 'Cash' | 'UPI' | 'Bank' | 'Card';
-}
-
-export interface Customer {
-  id: string;
-  name: string;
-  phone: string;
-  email?: string;
-  address?: string;
-  gstNumber?: string;
-  birthday?: string;
-  notes?: string;
-  totalSpent: number;
-  loyaltyPoints: number;
-  storeCredit: number;
-  outstandingDues: number;
-  creditLimit?: number;
-  dueDate?: string;
-  tag: 'VIP' | 'Regular' | 'Wholesale' | 'Distributor';
+export interface PersonnelFields {
+  militaryNumber: string;
+  seniorityNumber: string;
+  fullName: string;
+  maritalStatus: string;
+  maleChildren: number;
+  femaleChildren: number;
+  nationalId: string;
+  company: string;
+  subLocation: string;
   createdAt: string;
+  updatedAt: string;
 }
 
-export interface Supplier {
-  id: string;
-  name: string;
-  companyName: string;
-  phone: string;
-  email?: string;
-  gstin?: string;
-  address?: string;
-  paymentTerms?: string;
-  outstandingBalance: number;
-  leadTimeDays?: number;
+export interface Officer extends PersonnelFields {
+  rank: string;
+}
+
+export type OfficerDraft = Omit<Officer, 'createdAt' | 'updatedAt'>;
+
+export interface NonCommissionedOfficer extends PersonnelFields {
+  degree: string;
+}
+
+export type NonCommissionedOfficerDraft = Omit<NonCommissionedOfficer, 'createdAt' | 'updatedAt'>;
+
+export interface WorkerPage {
+  workers: Soldier[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface WorkerListFilters {
+  militaryNumber?: string;
+  fullName?: string;
+  company?: string;
+  subLocation?: string;
+  joinDateFrom?: string;
+  joinDateTo?: string;
+  dischargeDateFrom?: string;
+  dischargeDateTo?: string;
+  enlistmentDateFrom?: string;
+  enlistmentDateTo?: string;
+  governorate?: string;
+  religion?: string;
+}
+
+export interface WorkerSession {
+  token: string;
+  worker: Soldier;
+  mustChangePassword: boolean;
+}
+
+export interface UserAccount {
+  userId: number;
+  militaryNumber: string;
+  fullName: string;
+  role: 'admin';
+  mustChangePassword: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
-export interface POItem {
-  productId: string;
-  productName: string;
-  qty: number;
-  purchasePrice: number;
-  receivedQty?: number;
+export interface WorkerImportResult {
+  inserted: number;
+  updated: number;
+  failed: number;
+  errors: Array<{ row: number; militaryNumber: string; message: string }>;
 }
 
-export interface PurchaseOrder {
-  id: string;
-  poNumber: string;
-  supplierId: string;
-  supplierName: string;
-  orderDate: string;
-  receivedDate?: string;
-  invoiceNumber?: string;
-  status: 'Draft' | 'Ordered' | 'Partially Received' | 'Received' | 'Cancelled';
-  items: POItem[];
-  totalAmount: number;
-  invoiceNumbers?: string[];
-  notes?: string;
+export interface PersonnelImportResult {
+  inserted: number;
+  updated: number;
+  failed: number;
+  errors: Array<{ row: number; militaryNumber: string; message: string }>;
 }
 
-export interface SupplierLedgerEntry {
-  id: string;
-  supplierId: string;
-  date: string;
-  type: 'Invoice' | 'Payment' | 'Return' | 'Adjustment';
-  referenceNo: string;
-  debit: number;
-  credit: number;
-  balance: number;
-  notes?: string;
-  paymentMode?: 'Cash' | 'UPI' | 'Bank' | 'Card';
+export interface WorkerLeave {
+  id: number;
+  workerId: string;
+  fullName: string;
+  leaveType: string;
+  startDate: string;
+  endDate: string;
+  duration: string;
+  notes: string;
 }
 
-export type ExpenseCategory = 
-  | 'Rent' 
-  | 'Electricity' 
-  | 'Salary' 
-  | 'Internet' 
-  | 'Transport' 
-  | 'Miscellaneous';
-
-export interface Expense {
-  id: string;
-  title: string;
-  category: ExpenseCategory;
-  amount: number;
-  date: string; // YYYY-MM-DD
-  paymentMode: 'Cash' | 'UPI' | 'Bank' | 'Card';
-  notes?: string;
-  createdAt: string;
+export interface WorkerLeaveDraft {
+  id?: number;
+  workerId: string;
+  leaveType: string;
+  startDate: string;
+  endDate: string;
+  duration?: string;
+  notes: string;
 }
 
-export type EmployeeRole = 'Owner' | 'Cashier' | 'Inventory Staff' | 'Accountant' | 'Manager';
-
-export interface Employee {
-  id: string;
-  name: string;
-  phone: string;
-  address: string;
-  salary: number;
-  joiningDate: string;
-  role: EmployeeRole;
-  pin: string; // 4-digit security PIN
-  photoUrl?: string;
-  status: 'Active' | 'Inactive';
+export interface PersonnelLeaveRecord extends WorkerLeave {
+  personType: PersonType;
+  company: string;
+  source: 'legacy' | 'history';
 }
 
-export interface AttendanceRecord {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  date: string; // YYYY-MM-DD
-  checkInTime: string; // HH:MM AM/PM
-  checkOutTime?: string;
-  workingHours?: number;
-  status: 'Present' | 'Late' | 'Half Day' | 'Absent';
+export interface PersonnelLeaveDraft {
+  personType: PersonType;
+  militaryNumber: string;
+  leaveType: string;
+  startDate: string;
+  endDate: string;
+  duration: string;
+  notes: string;
 }
 
-export interface SaleReturn {
-  id: string;
-  returnInvoiceNumber: string;
-  originalInvoiceNumber: string;
-  saleId: string;
-  date: string;
-  customerName: string;
-  refundAmount: number;
-  reason: 'Defective' | 'Expired' | 'Wrong Item' | 'Customer Changed Mind';
-  items: {
-    productId: string;
-    productName: string;
-    qty: number;
-    unitPrice: number;
-  }[];
+export interface PersonnelLeaveFilters {
+  personType?: PersonType;
+  company?: string;
+  fullName?: string;
+  militaryNumber?: string;
 }
 
-export interface AuditLog {
-  id: string;
-  timestamp: string;
-  user: string;
-  action: string;
-  details: string;
-}
-
-export interface IncomingStockLog {
-  id: string;
-  productId: string;
-  productName: string;
-  barcode: string;
-  quantityAdded: number;
-  previousQuantity: number;
-  newQuantity: number;
-  purchasePrice: number;
-  supplierName: string;
-  dateTime: string;
-}
-
-export interface CashRegisterShift {
-  id: string;
-  cashierName: string;
-  cashierId?: string;
-  openedByEmployeeId?: string;
-  openedByName?: string;
-  startTime: string; // ISO
-  endTime?: string;  // ISO
-  openingCash: number;
-  closingCash?: number;
-  expectedCash?: number;
-  cashDifference?: number;
-  cashInTotal: number;
-  cashOutTotal: number;
-  safeDepositTotal: number;
-  status: 'Open' | 'Closed';
-  notes?: string;
-}
-
-export interface CashTransaction {
-  id: string;
-  shiftId: string;
-  timestamp: string;
-  type: 'CashIn' | 'CashOut' | 'SafeDeposit';
-  amount: number;
+export interface WorkerTransfer {
+  id: number;
+  workerId: string;
+  fullName: string;
+  effectiveDate: string;
+  fromLocation: string;
+  toLocation: string;
   reason: string;
-  cashierName: string;
-  cashierId?: string;
+  notes: string;
 }
 
-export interface PriceHistoryRecord {
-  id: string;
-  productId: string;
-  productName: string;
-  oldPurchasePrice: number;
-  newPurchasePrice: number;
-  oldSellingPrice: number;
-  newSellingPrice: number;
-  dateChanged: string;
-  changedBy: string;
+export interface WorkerTransferDraft {
+  workerId: string;
+  effectiveDate: string;
+  fromLocation?: string;
+  toLocation: string;
+  reason: string;
+  notes: string;
 }
 
-export interface CategoryNode {
-  id: string;
-  name: string;
-  parentId?: string;
-  description?: string;
-}
+export type PersonType = 'soldier' | 'officer' | 'nco';
 
-export interface RecycleBinItem {
-  id: string;
-  type: 'Product' | 'Customer' | 'Supplier' | 'Sale' | 'Expense';
-  originalId: string;
+export type PersonHistoryType =
+  | 'punishment'
+  | 'detention'
+  | 'absence'
+  | 'leave'
+  | 'transfer'
+  | 'struckOff'
+  | 'dismissed'
+  | 'medical';
+
+export interface PersonHistory {
+  id: number;
+  personType: PersonType;
+  militaryNumber: string;
+  historyType: PersonHistoryType;
+  eventDate: string;
+  endDate: string;
   title: string;
-  data: any;
-  deletedAt: string;
-  deletedBy: string;
+  duration: string;
+  reason: string;
+  fromLocation: string;
+  toLocation: string;
+  location: string;
+  notes: string;
+  createdAt: string;
 }
 
-export interface UpdatePackage {
-  version: string;
-  releaseDate: string;
-  releaseNotes: string[];
-  isApplied: boolean;
-}
-
-export type TabType = 
-  | 'dashboard'
-  | 'pos'
-  | 'products'
-  | 'categories'
-  | 'customers'
-  | 'suppliers'
-  | 'purchase_orders'
-  | 'expenses'
-  | 'employees'
-  | 'attendance'
-  | 'cash_register'
-  | 'calendar'
-  | 'reorder_engine'
-  | 'smart_reorder'
-  | 'price_history'
-  | 'sales_history'
-  | 'returns'
-  | 'inventory_intel'
-  | 'reports'
-  | 'barcodes'
-  | 'label_designer'
-  | 'backup'
-  | 'audit_logs'
-  | 'recycle_bin'
-  | 'health_monitor'
-  | 'updates'
-  | 'settings';
-
-export interface DashboardMetrics {
-  todaySalesAmount: number;
-  todaySalesCount: number;
-  todayProfit: number;
-  todayExpenses: number;
-  netProfitToday: number;
-  totalProductsCount: number;
-  totalAvailableStock: number;
-  lowStockCount: number;
-  expiringCount: number;
-  totalProfitAllTime: number;
-  totalCustomerDues: number;
-  heldBillsCount: number;
-}
+export type PersonHistoryDraft = Omit<PersonHistory, 'id' | 'createdAt'>;
