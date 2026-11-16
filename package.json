@@ -21,7 +21,7 @@
   },
   "build": {
     "appId": "com.localbusiness.grocerypos",
-    "productName": "نظام إدارة المجندين",
+    "productName": "منظومة افراد الفوج",
     "copyright": "Copyright © 2026 Your Name or Organization",
     "directories": {
       "output": "release"
@@ -34,6 +34,7 @@
       "main": "electron/main.js"
     },
     "win": {
+      "icon": "public/app-icon.ico",
       "target": [
         {
           "target": "nsis",
@@ -47,10 +48,12 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
+      "installerIcon": "public/app-icon.ico",
+      "uninstallerIcon": "public/app-icon.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "نظام إدارة المجندين",
-      "uninstallDisplayName": "نظام إدارة المجندين"
+      "shortcutName": "منظومة افراد الفوج",
+      "uninstallDisplayName": "منظومة افراد الفوج"
     }
   },
   "dependencies": {
@@ -80,7 +83,7 @@
     "@types/react": "^19.3.0",
     "autoprefixer": "^10.4.21",
     "electron": "^43.2.0",
-    "electron-builder": "^26.15.3",
+    "electron-builder": "26.18.0",
     "esbuild": "^0.25.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",

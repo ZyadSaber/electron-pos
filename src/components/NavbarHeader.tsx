@@ -2,7 +2,7 @@ import React from 'react';
 import { LogOut, UserRound } from 'lucide-react';
 import type { Worker } from '../types';
 
-export type AppTab = 'dashboard' | 'search' | 'workers' | 'basics' | 'officers' | 'ncos' | 'users' | 'leaves' | 'transfers' | 'backup' | 'profile';
+export type AppTab = 'dashboard' | 'workers' | 'basics' | 'officers' | 'ncos' | 'users' | 'leaves' | 'transfers' | 'backup' | 'profile';
 
 interface NavbarHeaderProps {
   worker: Worker;
@@ -13,7 +13,6 @@ interface NavbarHeaderProps {
 
 const adminTabs: Array<{ id: AppTab; label: string }> = [
   { id: 'dashboard', label: 'لوحة المعلومات' },
-  { id: 'search', label: 'بحث شامل' },
   { id: 'workers', label: 'المجندون' },
   { id: 'basics', label: 'تعريف الاساسيات' },
   { id: 'officers', label: 'الضباط' },
@@ -33,7 +32,7 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   <header className="shrink-0 border-b border-slate-200 bg-white shadow-sm" dir="rtl">
     <div className="flex min-h-16 items-center justify-between gap-4 px-5">
       <div>
-        <h1 className="text-base font-black text-slate-900">إدارة المجندين</h1>
+        <h1 className="text-base font-black text-slate-900">منظومة افراد الفوج</h1>
         <p className="mt-0.5 text-xs text-slate-500">بيانات المجندين والإجازات والتنقلات</p>
       </div>
       <div className="flex items-center gap-3">

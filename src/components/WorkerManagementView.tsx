@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Download, FileSpreadsheet, Plus, Search, UserRound, X } from 'lucide-react';
+import { PersonnelDetailModal, type PersonnelDetailRecord } from './PersonnelDetailModal';
 import type {
   Worker,
   WorkerBasicCategory,
@@ -133,6 +134,36 @@ const templateHeaders = [
   'المركز', 'الديانة', 'مركز التدريب', 'السلاح',
 ];
 
+const createSoldierDetailRecord = (worker: Worker): PersonnelDetailRecord => {
+  const fields: Array<[string, string | undefined]> = [
+    ['الرقم العسكري', worker.militaryNumber],
+    ['الدرجة / الرتبة', worker.rank],
+    ['الرقم القومي', worker.nationalId],
+    ['الرقم الثلاثي', worker.tripleNumber],
+    ['السرية', worker.company],
+    ['المكان الفرعي', worker.subLocation],
+    ['المحافظة', worker.governorate],
+    ['المركز', worker.district],
+    ['مركز التدريب', worker.trainingCenter],
+    ['السلاح', worker.weapon],
+    ['الهاتف', worker.phone],
+    ['الحالة الشهرية', worker.monthlyStatus],
+    ['ملاحظات', worker.notes],
+    ['الديانة', worker.religion],
+    ['تاريخ الضم', worker.joinDate],
+    ['تاريخ التجنيد', worker.enlistmentDate],
+    ['تاريخ التسريح', worker.dischargeDate],
+    ['تاريخ إنشاء السجل', worker.createdAt],
+    ['تاريخ آخر تحديث', worker.updatedAt],
+  ];
+  return {
+    kind: 'soldier',
+    militaryNumber: worker.militaryNumber,
+    fullName: worker.fullName,
+    fields: fields.map(([label, value]) => ({ label, value: String(value ?? '') })),
+  };
+};
+
 interface WorkerManagementViewProps {
   token: string;
 }
@@ -145,6 +176,7 @@ export const WorkerManagementView: React.FC<WorkerManagementViewProps> = ({ toke
   const [page, setPage] = useState(1);
   const [refreshKey, setRefreshKey] = useState(0);
   const [editWorker, setEditWorker] = useState<Worker | null | 'new'>(null);
+  const [selectedRecord, setSelectedRecord] = useState<PersonnelDetailRecord | null>(null);
   const [status, setStatus] = useState<{ success: boolean; message: string } | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -544,7 +576,12 @@ export const WorkerManagementView: React.FC<WorkerManagementViewProps> = ({ toke
             </thead>
             <tbody className="divide-y divide-slate-100">
               {pageData.workers.map(worker => (
-                <tr key={worker.militaryNumber} className="hover:bg-slate-50/70">
+                <tr
+                  key={worker.militaryNumber}
+                  onDoubleClick={() => setSelectedRecord(createSoldierDetailRecord(worker))}
+                  title="انقر مرتين لعرض التفاصيل"
+                  className="cursor-pointer hover:bg-slate-50/70"
+                >
                   <td className="px-4 py-3 font-mono text-xs" dir="ltr">{worker.militaryNumber}</td>
                   <td className="px-4 py-3 text-slate-600">{worker.rank || '—'}</td>
                   <td className="px-4 py-3 font-semibold text-slate-800">{worker.fullName}</td>
@@ -563,6 +600,7 @@ export const WorkerManagementView: React.FC<WorkerManagementViewProps> = ({ toke
                   <td className="px-4 py-3">
                     <button
                       type="button"
+                      onDoubleClick={event => event.stopPropagation()}
                       onClick={() => openWorkerEditor(worker)}
                       className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
                     >
@@ -700,6 +738,14 @@ export const WorkerManagementView: React.FC<WorkerManagementViewProps> = ({ toke
             </form>
           </div>
         </div>
+      )}
+
+      {selectedRecord && (
+        <PersonnelDetailModal
+          token={token}
+          record={selectedRecord}
+          onClose={() => setSelectedRecord(null)}
+        />
       )}
 
       {pendingRows && (

@@ -12,7 +12,6 @@ import { UserManagementView } from './components/UserManagementView';
 import { WorkerBasicsView } from './components/WorkerBasicsView';
 import { PersonnelManagementView } from './components/PersonnelManagementView';
 import { AdminDashboardView } from './components/AdminDashboardView';
-import { PersonnelSearchView } from './components/PersonnelSearchView';
 import type { WorkerSession } from './types';
 
 type AppState = 'loading' | 'setup' | 'login' | 'authenticated' | 'unavailable';
@@ -160,9 +159,6 @@ export default function App() {
           <>
             {activeTab === 'dashboard' && (
               <AdminDashboardView token={session.token} />
-            )}
-            {activeTab === 'search' && (
-              <PersonnelSearchView token={session.token} />
             )}
             {activeTab === 'workers' && (
               <WorkerManagementView token={session.token} />

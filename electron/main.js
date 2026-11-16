@@ -51,13 +51,13 @@ const requireAdmin = (event, token) => {
 };
 
 const createWindow = () => {
-  const iconPath = path.join(__dirname, '../assets/icon.ico');
+  const iconPath = path.join(__dirname, app.isPackaged ? '../dist/app-icon.ico' : '../public/app-icon.ico');
   mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
     minWidth: 1050,
     minHeight: 680,
-    title: 'نظام إدارة المجندين',
+    title: 'منظومة افراد الفوج',
     icon: fs.existsSync(iconPath) ? iconPath : undefined,
     show: false,
     webPreferences: {
